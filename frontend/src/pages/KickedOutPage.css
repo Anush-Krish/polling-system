@@ -1,0 +1,67 @@
+.kicked-out-page {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--bg-secondary);
+  padding: 2rem 0;
+}
+
+.kicked-out-content {
+  text-align: center;
+  background-color: var(--bg-primary);
+  border-radius: 8px;
+  padding: 3rem;
+  max-width: 500px;
+  width: 100%;
+  box-shadow: var(--shadow-md);
+}
+
+.kicked-out-icon {
+  font-size: 4rem;
+  margin-bottom: 1rem;
+  color: var(--primary-3);
+}
+
+.kicked-out-title {
+  font-size: 2rem;
+  color: var(--text-primary);
+  margin-bottom: 1rem;
+}
+
+.kicked-out-message {
+  color: var(--text-secondary);
+  margin-bottom: 2rem;
+  line-height: 1.6;
+}
+
+.return-btn {
+  background-color: var(--btn-primary);
+  color: white;
+  border: none;
+  padding: 0.75rem 1.5rem;
+  border-radius: 6px;
+  font-weight: 600;
+  cursor: pointer;
+  font-size: 1rem;
+  transition: all 0.2s ease;
+}
+
+.return-btn:hover {
+  background-color: var(--btn-primary-hover);
+}
+
+.return-btn:active {
+  background-color: var(--btn-primary-active);
+}
+
+@media (max-width: 768px) {
+  .kicked-out-content {
+    margin: 1rem;
+    padding: 2rem;
+  }
+  
+  .kicked-out-title {
+    font-size: 1.75rem;
+  }
+}

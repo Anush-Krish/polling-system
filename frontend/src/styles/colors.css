@@ -1,0 +1,209 @@
+/* 
+Color Palette for Live Polling System
+Based on the provided design specifications
+*/
+
+:root {
+  /* Primary Colors from design */
+  --primary-1: #7765DA; /* Light purple */
+  --primary-2: #5767D0; /* Medium blue-purple */
+  --primary-3: #4F0DCE; /* Dark purple */
+  
+  /* Neutral Colors from design */
+  --neutral-1: #F2F2F2; /* Light gray/white */
+  --neutral-2: #373737; /* Dark gray */
+  --neutral-3: #6E6E6E; /* Medium gray */
+  
+  /* Background Colors */
+  --bg-primary: #FFFFFF; /* White background */
+  --bg-secondary: #F2F2F2; /* Light gray background */
+  
+  /* Text Colors */
+  --text-primary: #373737; /* Dark gray text */
+  --text-secondary: #6E6E6E; /* Medium gray text */
+  --text-inverted: #FFFFFF; /* White text on dark backgrounds */
+  
+  /* Button Colors */
+  --btn-primary: #7765DA; /* Purple button */
+  --btn-primary-hover: #5767D0; /* Blue-purple button on hover */
+  --btn-primary-active: #4F0DCE; /* Dark purple button when active */
+  
+  /* Border Colors */
+  --border-default: #E0E0E0; /* Light gray border */
+  --border-strong: #CCCCCC; /* Medium gray border */
+  --border-accent: #7765DA; /* Purple accent border */
+  
+  /* Shadow Colors */
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+}
+
+/* Component-specific styles */
+.role-selector {
+  border: 2px solid var(--primary-1);
+  border-radius: 8px;
+  padding: 1.5rem;
+  background-color: var(--bg-primary);
+  transition: all 0.2s ease;
+}
+
+.role-selector:hover {
+  border-color: var(--primary-2);
+  box-shadow: var(--shadow-sm);
+}
+
+.role-selector.selected {
+  border-color: var(--primary-3);
+  background-color: rgba(79, 13, 206, 0.1);
+}
+
+.continue-btn {
+  background-color: var(--btn-primary);
+  color: white;
+  border: none;
+  padding: 0.75rem 1.5rem;
+  border-radius: 30px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.continue-btn:hover {
+  background-color: var(--btn-primary-hover);
+}
+
+.continue-btn:active {
+  background-color: var(--btn-primary-active);
+}
+
+.question-box {
+  background-color: var(--bg-primary);
+  border: 1px solid var(--border-default);
+  border-radius: 8px;
+  padding: 1rem;
+  margin-bottom: 1rem;
+}
+
+.option-box {
+  background-color: var(--bg-secondary);
+  border: 1px solid var(--border-default);
+  border-radius: 6px;
+  padding: 0.75rem;
+  margin-bottom: 0.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.option-selected {
+  background-color: var(--primary-1);
+  color: white;
+  border-color: var(--primary-2);
+}
+
+.results-bar {
+  height: 20px;
+  background-color: var(--primary-1);
+  border-radius: 10px;
+  overflow: hidden;
+  margin-top: 0.5rem;
+}
+
+.results-bar-fill {
+  height: 100%;
+  background-color: var(--primary-3);
+  transition: width 0.3s ease;
+}
+
+.chat-container {
+  background-color: white;
+  border: 1px solid var(--border-default);
+  border-radius: 8px;
+  padding: 1rem;
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+.chat-message {
+  padding: 0.5rem;
+  margin-bottom: 0.5rem;
+  border-radius: 6px;
+  max-width: 80%;
+  word-wrap: break-word;
+}
+
+.chat-message-user {
+  background-color: var(--primary-1);
+  color: white;
+  align-self: flex-end;
+  margin-left: auto;
+}
+
+.chat-message-other {
+  background-color: var(--bg-secondary);
+  align-self: flex-start;
+}
+
+.participant-list {
+  background-color: white;
+  border: 1px solid var(--border-default);
+  border-radius: 8px;
+  padding: 1rem;
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+.participant-item {
+  padding: 0.5rem;
+  border-bottom: 1px solid var(--border-default);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.participant-item:last-child {
+  border-bottom: none;
+}
+
+.kickout-btn {
+  color: var(--text-secondary);
+  background: none;
+  border: none;
+  cursor: pointer;
+  text-decoration: underline;
+  font-size: 0.875rem;
+}
+
+.kickout-btn:hover {
+  color: var(--primary-3);
+}
+
+.kicked-out-screen {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+  padding: 2rem;
+  text-align: center;
+}
+
+.kicked-out-icon {
+  font-size: 4rem;
+  margin-bottom: 1rem;
+  color: var(--primary-3);
+}
+
+.kicked-out-title {
+  font-size: 2rem;
+  margin-bottom: 1rem;
+  color: var(--text-primary);
+}
+
+.kicked-out-message {
+  color: var(--text-secondary);
+  margin-bottom: 2rem;
+  max-width: 600px;
+}

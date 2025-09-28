@@ -1,0 +1,143 @@
+.teacher-create-poll-page {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--bg-secondary);
+  padding: 2rem 0;
+}
+
+.create-poll-content {
+  background-color: var(--bg-primary);
+  border-radius: 8px;
+  padding: 2rem;
+  width: 100%;
+  max-width: 600px;
+  box-shadow: var(--shadow-md);
+}
+
+.title {
+  font-size: 1.75rem;
+  color: var(--text-primary);
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+.create-poll-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.label {
+  font-weight: 500;
+  color: var(--text-primary);
+}
+
+.label-with-button {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.add-option-btn {
+  background: none;
+  border: none;
+  color: var(--primary-3);
+  cursor: pointer;
+  font-weight: 500;
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  transition: background-color 0.2s ease;
+}
+
+.add-option-btn:hover {
+  background-color: var(--bg-secondary);
+}
+
+.input {
+  padding: 0.75rem;
+  border: 1px solid var(--border-default);
+  border-radius: 6px;
+  font-size: 1rem;
+  transition: border-color 0.2s ease;
+}
+
+.input:focus {
+  outline: none;
+  border-color: var(--primary-1);
+}
+
+.textarea {
+  min-height: 100px;
+  resize: vertical;
+}
+
+.option-input-group {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.option-input-group .input {
+  flex: 1;
+}
+
+.remove-option-btn {
+  background-color: var(--bg-secondary);
+  border: 1px solid var(--border-default);
+  color: var(--text-secondary);
+  border-radius: 4px;
+  width: 30px;
+  height: 30px;
+  cursor: pointer;
+  font-size: 1.2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+
+.remove-option-btn:hover {
+  background-color: var(--primary-1);
+  color: white;
+  border-color: var(--primary-2);
+}
+
+.create-poll-btn {
+  background-color: var(--btn-primary);
+  color: white;
+  border: none;
+  padding: 0.75rem;
+  border-radius: 6px;
+  font-weight: 600;
+  cursor: pointer;
+  font-size: 1rem;
+  transition: all 0.2s ease;
+  margin-top: 1rem;
+}
+
+.create-poll-btn:hover {
+  background-color: var(--btn-primary-hover);
+}
+
+.create-poll-btn:active {
+  background-color: var(--btn-primary-active);
+}
+
+@media (max-width: 768px) {
+  .create-poll-content {
+    margin: 1rem;
+    padding: 1.5rem;
+  }
+  
+  .option-input-group {
+    flex-direction: column;
+  }
+}
