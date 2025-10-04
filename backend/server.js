@@ -10,14 +10,21 @@ const server = http.createServer(app);
 const io = socketIo(server, {
   cors: {
     origin: process.env.NODE_ENV === 'production' ? false : ["http://localhost:3000", "http://localhost:3001"],
-    methods: ["GET", "POST"]
+    methods: ["GET", "POST"],
+    credentials: true
   }
 });
 
 const PORT = process.env.PORT || 5001;
 
 // Middleware
-app.use(cors());
+app.use(cors({
+  origin: process.env.NODE_ENV === 'production' ? false : ["http://localhost:3000", "http://localhost:3001"],
+  credentials: true,
+  optionsSuccessStatus: 200,
+  exposedHeaders: ['Authorization'],
+  allowedHeaders: ['Content-Type', 'Authorization']
+}));
 app.use(express.json());
 
 // Database connection
@@ -29,12 +36,16 @@ mongoose.connect(process.env.MONGODB_URI , {
 .catch(err => console.error('MongoDB connection error:', err));
 
 // Import routes
-const pollRoutes = require('./routes/pollRoutes');
-const userRoutes = require('./routes/userRoutes');
+const coupleRoutes = require('./routes/coupleRoutes');
+const sessionRoutes = require('./routes/sessionRoutes');
+const snapRoutes = require('./routes/snapRoutes');
+const chatRoutes = require('./routes/chatRoutes');
 
 // Use routes
-app.use('/api/polls', pollRoutes);
-app.use('/api/users', userRoutes);
+app.use('/api/couples', coupleRoutes);
+app.use('/api/sessions', sessionRoutes);
+app.use('/api/snaps', snapRoutes);
+app.use('/api/chat', chatRoutes);
 
 // Basic route
 app.get('/', (req, res) => {

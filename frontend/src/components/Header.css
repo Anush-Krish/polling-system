@@ -12,6 +12,14 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 2rem;
+}
+
+.logo-link {
+  text-decoration: none;
+  color: inherit;
 }
 
 .logo {
@@ -21,8 +29,68 @@
   margin: 0;
 }
 
+.logout-btn {
+  background-color: #ff6b6b;
+  color: white;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.9rem;
+}
+
+.logout-btn:hover {
+  background-color: #ff5252;
+}
+
 @media (max-width: 768px) {
   .header-content {
     padding: 0 1rem;
   }
 }
+/* Mobile optimizations for 5-6.5 inch screens */
+@media (max-width: 414px) {
+  .header-content {
+    padding: 0 1rem;
+  }
+  
+  .logo {
+    font-size: 1.3rem;
+  }
+  
+  .logout-btn {
+    padding: 0.4rem 0.8rem;
+    font-size: 0.85rem;
+  }
+}
+
+@media (max-width: 375px) {
+  .header-content {
+    padding: 0 0.8rem;
+  }
+  
+  .logo {
+    font-size: 1.2rem;
+  }
+  
+  .logout-btn {
+    padding: 0.35rem 0.7rem;
+    font-size: 0.8rem;
+  }
+}
+
+@media (max-width: 320px) {
+  .header-content {
+    padding: 0 0.6rem;
+  }
+  
+  .logo {
+    font-size: 1.1rem;
+  }
+  
+  .logout-btn {
+    padding: 0.3rem 0.6rem;
+    font-size: 0.75rem;
+  }
+}
+

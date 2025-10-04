@@ -14,7 +14,35 @@
 .footer p {
   margin: 0;
   color: var(--text-secondary);
-  font-size: 0.9rem;
+  font-size: 0.8rem;
+  text-align: center;
+}
+
+/* Mobile optimizations for 5-6.5 inch screens */
+@media (max-width: 414px) {
+  .footer {
+    padding: 1.5rem 0 0.8rem;
+  }
+  
+  .footer p {
+    font-size: 0.75rem;
+  }
+}
+
+@media (max-width: 375px) {
+  .footer p {
+    font-size: 0.7rem;
+  }
+}
+
+@media (max-width: 320px) {
+  .footer {
+    padding: 1.2rem 0 0.6rem;
+  }
+  
+  .footer p {
+    font-size: 0.65rem;
+  }
 }
 
 @media (max-width: 768px) {

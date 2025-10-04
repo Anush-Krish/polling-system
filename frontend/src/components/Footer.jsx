@@ -1,4 +1,4 @@
-// Footer component for Live Polling System
+// Footer component for Flixy
 import React from 'react';
 import './Footer.css';
 
@@ -7,7 +7,7 @@ const Footer = () => {
     <footer className="footer">
       <div className="container">
         <div className="footer-content">
-          <p>&copy; {new Date().getFullYear()} Live Polling System. All rights reserved.</p>
+          <p>Flixy v1.0.0 • © 2025 • by Anush</p>
         </div>
       </div>
     </footer>

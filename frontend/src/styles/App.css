@@ -9,3 +9,35 @@ main {
   display: flex;
   flex-direction: column;
 }
+
+.app-loading {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  font-size: 1.2rem;
+  color: #666;
+}
+
+/* Mobile optimizations for 5-6.5 inch screens (320px - 414px) */
+@media (max-width: 414px) {
+  .App {
+    font-size: 14px; /* Base font size for better scaling */
+  }
+  
+  main {
+    padding: 0.5rem;
+  }
+}
+
+@media (max-width: 375px) {
+  .App {
+    font-size: 13px;
+  }
+}
+
+@media (max-width: 320px) {
+  .App {
+    font-size: 12px;
+  }
+}
