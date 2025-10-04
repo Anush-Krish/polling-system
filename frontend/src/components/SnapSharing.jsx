@@ -17,14 +17,51 @@ const SnapSharing = ({ coupleId, token, partnerName }) => {
 
   useEffect(() => {
     fetchTodaysSnaps();
-    
-    // Clean up camera stream when component unmounts
-    return () => {
+  }, [coupleId, token]);
+
+  useEffect(() => {
+    if (useCamera) {
+      setVideoLoaded(false);
+      setError('');
+
+      let mediaStream;
+      const enableCamera = async () => {
+        try {
+          mediaStream = await navigator.mediaDevices.getUserMedia({
+            video: { facingMode: "user" },
+            audio: false,
+          });
+          setStream(mediaStream);
+          if (videoRef.current) {
+            videoRef.current.srcObject = mediaStream;
+            videoRef.current.onloadedmetadata = () => {
+              videoRef.current.play();
+              setVideoLoaded(true);
+            };
+          }
+        } catch (err) {
+          setError(
+            "Camera access denied. Please enable camera permissions to use this feature."
+          );
+          console.error("Error accessing camera:", err);
+          setUseCamera(false);
+        }
+      };
+
+      enableCamera();
+
+      return () => {
+        if (mediaStream) {
+          mediaStream.getTracks().forEach((track) => track.stop());
+        }
+      };
+    } else {
       if (stream) {
         stream.getTracks().forEach(track => track.stop());
+        setStream(null);
       }
-    };
-  }, [coupleId, token]);
+    }
+  }, [useCamera]);
 
   const fetchTodaysSnaps = async () => {
     try {
@@ -69,35 +106,10 @@ const SnapSharing = ({ coupleId, token, partnerName }) => {
     }
   };
 
-  const startCamera = async () => {
+  const startCamera = () => {
     setError('');
-    setVideoLoaded(false); // Reset video loaded state
-    
-    if (videoRef.current && videoRef.current.srcObject) {
-      // If there's already a stream, stop it first
-      const tracks = videoRef.current.srcObject.getTracks();
-      tracks.forEach(track => track.stop());
-    }
-    
-    try {
-      const mediaStream = await navigator.mediaDevices.getUserMedia({ 
-        video: { facingMode: "user" }, // Prefer front-facing camera
-        audio: false // We don't need audio for snaps
-      });
-      
-      setStream(mediaStream);
-      if (videoRef.current) {
-        videoRef.current.srcObject = mediaStream;
-        
-        // Immediately set video as loaded to allow capture
-        // The video element should show the stream automatically
-        setVideoLoaded(true);
-      }
-      setUseCamera(true);
-    } catch (err) {
-      setError('Camera access denied. Please enable camera permissions to use this feature.');
-      console.error('Error accessing camera:', err);
-    }
+    setVideoLoaded(false);
+    setUseCamera(true);
   };
 
   const captureImage = () => {
@@ -106,24 +118,12 @@ const SnapSharing = ({ coupleId, token, partnerName }) => {
       const canvas = canvasRef.current;
       const context = canvas.getContext('2d');
       
-      // Just check if video has valid dimensions before capturing
       if (video.videoWidth > 0 && video.videoHeight > 0) {
-        // Set canvas dimensions to match video
         canvas.width = video.videoWidth;
         canvas.height = video.videoHeight;
-        
-        // Draw video frame to canvas
         context.drawImage(video, 0, 0, canvas.width, canvas.height);
-        
-        // Convert to data URL
         const imageDataUrl = canvas.toDataURL('image/jpeg');
         setImagePreview(imageDataUrl);
-        
-        // Stop the camera stream after capturing
-        if (stream) {
-          stream.getTracks().forEach(track => track.stop());
-          setStream(null);
-        }
         setUseCamera(false);
       } else {
         setError("Video not loaded yet. Please wait for the video to load before capturing.");
@@ -134,18 +134,7 @@ const SnapSharing = ({ coupleId, token, partnerName }) => {
   };
 
   const stopCamera = () => {
-    if (videoRef.current && videoRef.current.srcObject) {
-      const tracks = videoRef.current.srcObject.getTracks();
-      tracks.forEach(track => track.stop());
-    }
-    setStream(null);
-    setVideoLoaded(false);
     setUseCamera(false);
-    
-    // Reset video source
-    if (videoRef.current) {
-      videoRef.current.srcObject = null;
-    }
   };
 
   const handleUpload = async () => {
@@ -256,7 +245,7 @@ const SnapSharing = ({ coupleId, token, partnerName }) => {
                 <button onClick={stopCamera} className="close-btn">✕</button>
               </div>
               <div className="camera-container">
-                <video ref={videoRef} className="camera-video" autoPlay playsInline />
+                <video ref={videoRef} className="camera-video" playsInline />
                 {!videoLoaded && (
                   <div className="video-loading-overlay">
                     <p>Loading camera...</p>
