@@ -3,7 +3,6 @@ import React, { useState } from 'react';
 import './CoupleAuth.css';
 
 const CoupleAuth = ({ onAuthSuccess }) => {
-  const [isCreating, setIsCreating] = useState(false);
   const [formData, setFormData] = useState({
     coupleName: '',
     partner1: '',
@@ -27,34 +26,18 @@ const CoupleAuth = ({ onAuthSuccess }) => {
     try {
       let response;
       
-      if (isCreating) {
-        // Creating a new couple
-        response = await fetch('http://localhost:5001/api/couples/create', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({
-            coupleName: formData.coupleName,
-            partner1: formData.partner1,
-            partner2: formData.partner2,
-            accessCode: formData.accessCode
-          })
-        });
-      } else {
-        // Joining existing couple
-        response = await fetch('http://localhost:5001/api/couples/authenticate', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({
-            coupleName: formData.coupleName,
-            accessCode: formData.accessCode,
-            partnerName: formData.partnerName
-          })
-        });
-      }
+      // Always joining existing couple
+      response = await fetch('http://localhost:5001/api/couples/authenticate', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          coupleName: formData.coupleName,
+          accessCode: formData.accessCode,
+          partnerName: formData.partnerName
+        })
+      });
       
       if (!response.ok) {
         const errorData = await response.json();
@@ -66,7 +49,7 @@ const CoupleAuth = ({ onAuthSuccess }) => {
       // Store token and couple data in localStorage
       localStorage.setItem('coupleToken', data.data.token);
       localStorage.setItem('coupleId', data.data._id);
-      localStorage.setItem('partnerName', isCreating ? formData.partner1 : formData.partnerName);
+      localStorage.setItem('partnerName', formData.partnerName);
       
       onAuthSuccess(data.data);
     } catch (err) {
@@ -77,50 +60,22 @@ const CoupleAuth = ({ onAuthSuccess }) => {
   return (
     <div className="auth-container">
       <div className="auth-card">
-        <h2>{isCreating ? 'Create Couple Account' : 'Join Couple Account'}</h2>
+        <h2>Join Couple Account</h2>
         
         {error && <div className="error-message">{error}</div>}
         
         <form onSubmit={handleSubmit}>
-          {isCreating && (
-            <>
-              <div className="form-group">
-                <label htmlFor="coupleName">Couple Name</label>
-                <input
-                  type="text"
-                  id="coupleName"
-                  name="coupleName"
-                  value={formData.coupleName}
-                  onChange={handleChange}
-                  required
-                />
-              </div>
-              
-              <div className="form-group">
-                <label htmlFor="partner1">Your Name</label>
-                <input
-                  type="text"
-                  id="partner1"
-                  name="partner1"
-                  value={formData.partner1}
-                  onChange={handleChange}
-                  required
-                />
-              </div>
-              
-              <div className="form-group">
-                <label htmlFor="partner2">Partner's Name</label>
-                <input
-                  type="text"
-                  id="partner2"
-                  name="partner2"
-                  value={formData.partner2}
-                  onChange={handleChange}
-                  required
-                />
-              </div>
-            </>
-          )}
+          <div className="form-group">
+            <label htmlFor="coupleName">Couple Name</label>
+            <input
+              type="text"
+              id="coupleName"
+              name="coupleName"
+              value={formData.coupleName}
+              onChange={handleChange}
+              required
+            />
+          </div>
           
           <div className="form-group">
             <label htmlFor="accessCode">Access Code</label>
@@ -134,45 +89,22 @@ const CoupleAuth = ({ onAuthSuccess }) => {
             />
           </div>
           
-          {!isCreating && (
-            <>
-              <div className="form-group">
-                <label htmlFor="coupleName">Couple Name</label>
-                <input
-                  type="text"
-                  id="coupleName"
-                  name="coupleName"
-                  value={formData.coupleName}
-                  onChange={handleChange}
-                  required
-                />
-              </div>
-              <div className="form-group">
-                <label htmlFor="partnerName">Your Name</label>
-                <input
-                  type="text"
-                  id="partnerName"
-                  name="partnerName"
-                  value={formData.partnerName}
-                  onChange={handleChange}
-                  required
-                />
-              </div>
-            </>
-          )}
+          <div className="form-group">
+            <label htmlFor="partnerName">Your Name</label>
+            <input
+              type="text"
+              id="partnerName"
+              name="partnerName"
+              value={formData.partnerName}
+              onChange={handleChange}
+              required
+            />
+          </div>
           
           <button type="submit" className="auth-btn">
-            {isCreating ? 'Create Account' : 'Join Account'}
+            Join Account
           </button>
         </form>
-        
-        <div className="toggle-auth">
-          {isCreating ? (
-            <p>Already have an account? <button onClick={() => setIsCreating(false)}>Join here</button></p>
-          ) : (
-            <p>Don't have an account? <button onClick={() => setIsCreating(true)}>Create one</button></p>
-          )}
-        </div>
       </div>
     </div>
   );
