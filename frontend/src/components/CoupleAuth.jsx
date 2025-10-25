@@ -1,6 +1,7 @@
 // CoupleAuth.jsx
 import React, { useState } from 'react';
 import './CoupleAuth.css';
+import { apiRequest } from '../services/api';
 
 const CoupleAuth = ({ onAuthSuccess }) => {
   const [formData, setFormData] = useState({
@@ -24,27 +25,14 @@ const CoupleAuth = ({ onAuthSuccess }) => {
     e.preventDefault();
     
     try {
-      let response;
-      
-      // Always joining existing couple
-      response = await fetch('http://localhost:5001/api/couples/authenticate', {
+      const data = await apiRequest('/couples/authenticate', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
         body: JSON.stringify({
           coupleName: formData.coupleName,
           accessCode: formData.accessCode,
           partnerName: formData.partnerName
         })
       });
-      
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || 'Authentication failed');
-      }
-      
-      const data = await response.json();
       
       // Store token and couple data in localStorage
       localStorage.setItem('coupleToken', data.data.token);
