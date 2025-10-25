@@ -11,6 +11,7 @@ const SnapSharing = ({ coupleId, token, partnerName }) => {
   const [useCamera, setUseCamera] = useState(false);
   const [stream, setStream] = useState(null);
   const [videoLoaded, setVideoLoaded] = useState(false);
+  const [lastUploadedSnap, setLastUploadedSnap] = useState(null);
   const fileInputRef = useRef(null);
   const videoRef = useRef(null);
   const canvasRef = useRef(null);
@@ -101,6 +102,7 @@ const SnapSharing = ({ coupleId, token, partnerName }) => {
       const reader = new FileReader();
       reader.onloadend = () => {
         setImagePreview(reader.result);
+        setLastUploadedSnap(null); // Clear the last uploaded snap when a new image is selected
       };
       reader.readAsDataURL(file);
     }
@@ -174,11 +176,11 @@ const SnapSharing = ({ coupleId, token, partnerName }) => {
 
       const data = await response.json();
       setSnaps(prev => [data.data, ...prev]);
+      setLastUploadedSnap(data.data); // Set the last uploaded snap
       setImagePreview(null);
       if (fileInputRef.current) {
         fileInputRef.current.value = '';
       }
-      alert('Snap uploaded successfully!');
     } catch (error) {
       console.error('Error uploading snap:', error);
       setError(error.message);
@@ -266,9 +268,17 @@ const SnapSharing = ({ coupleId, token, partnerName }) => {
         )}
         
         {/* Show image preview when available and not using camera */}
-        {!useCamera && imagePreview && (
+        {!useCamera && imagePreview && !lastUploadedSnap && (
           <div className="image-preview">
             <img src={imagePreview} alt="Preview" />
+          </div>
+        )}
+
+        {/* Show the last uploaded snap */}
+        {lastUploadedSnap && (
+          <div className="image-preview">
+            <p>Last uploaded snap:</p>
+            <img src={lastUploadedSnap.imageUrl} alt="Last uploaded snap" />
           </div>
         )}
         

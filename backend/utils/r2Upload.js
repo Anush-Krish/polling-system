@@ -1,5 +1,6 @@
 // r2Upload.js
-const { PutObjectCommand } = require('@aws-sdk/client-s3');
+const { PutObjectCommand, GetObjectCommand } = require('@aws-sdk/client-s3');
+const { getSignedUrl } = require('@aws-sdk/s3-request-presigner');
 const { r2Client } = require('./r2Config');
 const { randomUUID } = require('crypto');
 
@@ -26,11 +27,11 @@ async function uploadImageToR2(imageBuffer, originalName, folder = 'snaps') {
     console.log('Upload to R2 successful');
     
     // Return the public URL for the uploaded image
-    const imageUrl = `https://396e002de9ba2adacec4dcb72f7c96c2.r2.cloudflarestorage.com/anush-dev/${uniqueFileName}`;
+    // const imageUrl = `https://396e002de9ba2adacec4dcb72f7c96c2.r2.cloudflarestorage.com/anush-dev/${uniqueFileName}`;
     
     return {
       success: true,
-      imageUrl,
+      // imageUrl, // No longer returning direct URL
       r2Key: uniqueFileName
     };
   } catch (error) {
@@ -42,4 +43,18 @@ async function uploadImageToR2(imageBuffer, originalName, folder = 'snaps') {
   }
 }
 
-module.exports = { uploadImageToR2 };
+async function getSignedUrlForR2(key) {
+  try {
+    const command = new GetObjectCommand({
+      Bucket: 'anush-dev',
+      Key: key
+    });
+    const signedUrl = await getSignedUrl(r2Client, command, { expiresIn: 3600 }); // URL valid for 1 hour
+    return signedUrl;
+  } catch (error) {
+    console.error('Error generating signed URL for R2:', error);
+    throw new Error(`Failed to generate signed URL: ${error.message}`);
+  }
+}
+
+module.exports = { uploadImageToR2, getSignedUrlForR2 };

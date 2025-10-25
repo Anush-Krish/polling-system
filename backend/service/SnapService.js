@@ -2,7 +2,7 @@
 const Snap = require('../entity/Snap');
 const SnapDTO = require('../dto/SnapDTO');
 const Couple = require('../entity/Couple');
-const { uploadImageToR2 } = require('../utils/r2Upload');
+const { uploadImageToR2, getSignedUrlForR2 } = require('../utils/r2Upload');
 
 class SnapService {
   // Upload a new snap
@@ -56,7 +56,7 @@ class SnapService {
         }
         
         console.log('R2 upload successful:', uploadResult);
-        imageUrl = uploadResult.imageUrl;
+        // imageUrl = uploadResult.imageUrl; // No longer directly using this
         r2Key = uploadResult.r2Key;
       } else {
         console.log('Using existing image URL:', snapData.imageUrl);
@@ -64,12 +64,14 @@ class SnapService {
       
       const snap = new Snap({
         ...validatedData.toObject(),
-        imageUrl,
+        // imageUrl, // Will be generated on retrieval
         r2Key
       });
       await snap.save();
-      
-      return snap;
+
+      // Generate a signed URL for the newly uploaded snap before returning
+      const signedUrl = await getSignedUrlForR2(snap.r2Key);
+      return { ...snap.toObject(), imageUrl: signedUrl };
     } catch (error) {
       throw new Error(`Failed to upload snap: ${error.message}`);
     }
@@ -90,7 +92,13 @@ class SnapService {
         isActive: true
       }).sort({ uploadDate: -1 });
       
-      return snaps;
+      // Generate signed URLs for each snap
+      const snapsWithSignedUrls = await Promise.all(snaps.map(async (snap) => {
+        const signedUrl = await getSignedUrlForR2(snap.r2Key);
+        return { ...snap.toObject(), imageUrl: signedUrl };
+      }));
+      
+      return snapsWithSignedUrls;
     } catch (error) {
       throw new Error(`Failed to get snaps: ${error.message}`);
     }
@@ -111,7 +119,7 @@ class SnapService {
         throw new Error('Couple not found or inactive');
       }
       
-      // Check if the user is the one who uploaded it
+      // Check if the user is the one who sent it
       if (snap.uploadedBy !== partnerName) {
         throw new Error('Unauthorized: Only the uploader can delete this snap');
       }
@@ -151,7 +159,13 @@ class SnapService {
         isActive: true
       }).sort({ uploadDate: -1 });
       
-      return snaps;
+      // Generate signed URLs for each snap
+      const snapsWithSignedUrls = await Promise.all(snaps.map(async (snap) => {
+        const signedUrl = await getSignedUrlForR2(snap.r2Key);
+        return { ...snap.toObject(), imageUrl: signedUrl };
+      }));
+      
+      return snapsWithSignedUrls;
     } catch (error) {
       throw new Error(`Failed to get today's snaps: ${error.message}`);
     }

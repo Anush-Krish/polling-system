@@ -49,12 +49,10 @@ app.use('/api/chat', chatRoutes);
 
 // Basic route
 app.get('/', (req, res) => {
-  res.send('Polling System API');
+  res.send('Shunush API');
 });
 
-// Setup socket.io event handlers
-const { setupSocketHandlers } = require('./utils/socketHandlers');
-setupSocketHandlers(io);
+
 
 server.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);

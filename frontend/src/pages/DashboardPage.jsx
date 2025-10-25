@@ -2,7 +2,6 @@
 import React, { useState, useEffect } from 'react';
 import SnapSharing from '../components/SnapSharing';
 import ChatBubble from '../components/ChatBubble';
-import LocationDisplay from '../components/LocationDisplay';
 import './DashboardPage.css';
 
 const DashboardPage = () => {
@@ -79,13 +78,6 @@ const DashboardPage = () => {
             coupleId={coupleData._id} 
             token={token}
             partnerName={partnerName}
-          />
-        </div>
-        
-        <div className="dashboard-card location-card">
-          <LocationDisplay 
-            coupleId={coupleData._id} 
-            token={token} 
           />
         </div>
       </div>
