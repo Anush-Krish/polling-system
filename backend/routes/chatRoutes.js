@@ -1,18 +1,22 @@
 // chatRoutes.js
 const express = require('express');
 const router = express.Router();
-const chatController = require('../controllers/ChatController');
+const ChatController = require('../controllers/ChatController');
 
-// Send a message
-router.post('/send', chatController.authenticateToken, chatController.sendMessage);
+module.exports = (io) => {
+  const chatController = new ChatController(io);
 
-// Get chat history
-router.get('/history/:coupleId', chatController.authenticateToken, chatController.getChatHistory);
+  // Send a message
+  router.post('/send', chatController.authenticateToken, chatController.sendMessage);
 
-// Mark messages as read
-router.put('/read/:coupleId', chatController.authenticateToken, chatController.markMessagesAsRead);
+  // Get chat history
+  router.get('/history/:coupleId', chatController.authenticateToken, chatController.getChatHistory);
 
-// Delete a message
-router.delete('/:messageId', chatController.authenticateToken, chatController.deleteMessage);
+  // Mark messages as read
+  router.put('/read/:coupleId', chatController.authenticateToken, chatController.markMessagesAsRead);
 
-module.exports = router;
+  // Delete a message
+  router.delete('/:messageId', chatController.authenticateToken, chatController.deleteMessage);
+
+  return router;
+};

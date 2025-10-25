@@ -2,6 +2,10 @@
 const CoupleService = require('../service/CoupleService');
 
 class CoupleController {
+  constructor(io) {
+    this.io = io;
+  }
+
   // Create a new couple
   async createCouple(req, res) {
     try {
@@ -69,6 +73,9 @@ class CoupleController {
       const { status, location } = req.body;
 
       const updatedCouple = await CoupleService.updateStatus(coupleId, status, location);
+
+      // Emit a Socket.IO event for status update
+      this.io.to(coupleId).emit('statusUpdate', { coupleId, status: updatedCouple.status, location: updatedCouple.location });
 
       res.status(200).json({
         success: true,
@@ -140,4 +147,4 @@ class CoupleController {
   }
 }
 
-module.exports = new CoupleController();
+module.exports = CoupleController;

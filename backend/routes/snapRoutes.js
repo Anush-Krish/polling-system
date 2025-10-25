@@ -1,18 +1,22 @@
 // snapRoutes.js
 const express = require('express');
 const router = express.Router();
-const snapController = require('../controllers/SnapController');
+const SnapController = require('../controllers/SnapController');
 
-// Upload a new snap
-router.post('/upload', snapController.authenticateToken, snapController.uploadSnap);
+module.exports = (io) => {
+  const snapController = new SnapController(io);
 
-// Get snaps for a couple
-router.get('/couple/:coupleId', snapController.authenticateToken, snapController.getSnaps);
+  // Upload a new snap
+  router.post('/upload', snapController.authenticateToken, snapController.uploadSnap);
 
-// Get today's snaps for a couple
-router.get('/today/couple/:coupleId', snapController.authenticateToken, snapController.getTodaysSnaps);
+  // Get snaps for a couple
+  router.get('/couple/:coupleId', snapController.authenticateToken, snapController.getSnaps);
 
-// Delete a snap
-router.delete('/:snapId', snapController.authenticateToken, snapController.deleteSnap);
+  // Get today's snaps for a couple
+  router.get('/today/couple/:coupleId', snapController.authenticateToken, snapController.getTodaysSnaps);
 
-module.exports = router;
+  // Delete a snap
+  router.delete('/:snapId', snapController.authenticateToken, snapController.deleteSnap);
+
+  return router;
+};

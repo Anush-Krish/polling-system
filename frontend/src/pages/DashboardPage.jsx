@@ -4,6 +4,7 @@ import SnapSharing from '../components/SnapSharing';
 import ChatBubble from '../components/ChatBubble';
 import './DashboardPage.css';
 import { apiRequest } from '../services/api';
+import { SocketProvider } from '../context/SocketContext';
 
 const DashboardPage = () => {
   const [coupleData, setCoupleData] = useState(null);
@@ -56,26 +57,28 @@ const DashboardPage = () => {
   }
 
   return (
-    <div className="dashboard-container">
-      <div className="dashboard-content">
-        <h1>Welcome, {partnerName}!</h1>
-        <p>You are connected to: <strong>{coupleData.coupleName}</strong></p>
-        
-        <div className="dashboard-card snaps-card">
-          <SnapSharing 
-            coupleId={coupleData._id} 
-            partnerName={partnerName}
-          />
+    <SocketProvider>
+      <div className="dashboard-container">
+        <div className="dashboard-content">
+          <h1>Welcome, {partnerName}!</h1>
+          <p>You are connected to: <strong>{coupleData.coupleName}</strong></p>
+          
+          <div className="dashboard-card snaps-card">
+            <SnapSharing 
+              coupleId={coupleData._id} 
+              partnerName={partnerName}
+            />
+          </div>
         </div>
+        
+        <ChatBubble
+          coupleId={coupleData._id}
+          partnerName={partnerName}
+          partner1={coupleData.partner1}
+          partner2={coupleData.partner2}
+        />
       </div>
-      
-      <ChatBubble
-        coupleId={coupleData._id}
-        partnerName={partnerName}
-        partner1={coupleData.partner1}
-        partner2={coupleData.partner2}
-      />
-    </div>
+    </SocketProvider>
   );
 };
 

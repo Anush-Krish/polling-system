@@ -3,6 +3,10 @@ const SnapService = require('../service/SnapService');
 const { authenticateToken } = require('../middleware/authMiddleware');
 
 class SnapController {
+  constructor(io) {
+    this.io = io;
+  }
+
   // Upload a new snap
   async uploadSnap(req, res) {
     try {
@@ -15,6 +19,9 @@ class SnapController {
         r2Key,
         caption
       });
+
+      // Emit a Socket.IO event for new snap
+      this.io.to(coupleId).emit('newSnap', snap);
 
       res.status(201).json({
         success: true,
@@ -82,6 +89,9 @@ class SnapController {
 
       const deletedSnap = await SnapService.deleteSnap(snapId, partnerName);
 
+      // Emit a Socket.IO event for deleted snap
+      this.io.to(deletedSnap.coupleId).emit('snapDeleted', { snapId: deletedSnap._id });
+
       res.status(200).json({
         success: true,
         message: 'Snap deleted successfully',
@@ -101,4 +111,4 @@ class SnapController {
   }
 }
 
-module.exports = new SnapController();
+module.exports = SnapController;

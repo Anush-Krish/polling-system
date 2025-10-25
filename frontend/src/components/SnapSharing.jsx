@@ -2,6 +2,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import './SnapSharing.css';
 import { apiRequest } from '../services/api';
+import { useSocket } from '../context/SocketContext';
 
 const SnapSharing = ({ coupleId, partnerName }) => {
   const [snaps, setSnaps] = useState([]);
@@ -16,10 +17,28 @@ const SnapSharing = ({ coupleId, partnerName }) => {
   const fileInputRef = useRef(null);
   const videoRef = useRef(null);
   const canvasRef = useRef(null);
+  const socket = useSocket();
 
   useEffect(() => {
     fetchTodaysSnaps();
-  }, [coupleId]); // Removed token from dependency array
+
+    if (socket) {
+      socket.on('newSnap', (newSnap) => {
+        console.log('Received new snap:', newSnap);
+        setSnaps(prev => [newSnap, ...prev]);
+      });
+
+      socket.on('snapDeleted', ({ snapId }) => {
+        console.log('Received snap deleted event for snapId:', snapId);
+        setSnaps(prev => prev.filter(snap => snap._id !== snapId));
+      });
+
+      return () => {
+        socket.off('newSnap');
+        socket.off('snapDeleted');
+      };
+    }
+  }, [coupleId, socket]);
 
   useEffect(() => {
     if (useCamera) {

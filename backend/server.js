@@ -36,10 +36,10 @@ mongoose.connect(process.env.MONGODB_URI , {
 .catch(err => console.error('MongoDB connection error:', err));
 
 // Import routes
-const coupleRoutes = require('./routes/coupleRoutes');
+const coupleRoutes = require('./routes/coupleRoutes')(io);
 const sessionRoutes = require('./routes/sessionRoutes');
-const snapRoutes = require('./routes/snapRoutes');
-const chatRoutes = require('./routes/chatRoutes');
+const snapRoutes = require('./routes/snapRoutes')(io);
+const chatRoutes = require('./routes/chatRoutes')(io);
 const SessionService = require('./service/SessionService'); // Import SessionService
 
 // Use routes

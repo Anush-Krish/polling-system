@@ -1,10 +1,7 @@
-import React, { createContext, useContext, useEffect, useState } from 'react';
+import React, { createContext, useContext, useEffect, useState, useRef } from 'react';
 import io from 'socket.io-client';
 
-const SocketContext = createContext();
-
-// Use VITE_API_URL environment variable, fallback to default
-const SOCKET_SERVER_URL = import.meta.env.VITE_API_URL?.replace('/api', '') || '';
+const SocketContext = createContext(null);
 
 export const useSocket = () => {
   return useContext(SocketContext);
@@ -12,34 +9,58 @@ export const useSocket = () => {
 
 export const SocketProvider = ({ children }) => {
   const [socket, setSocket] = useState(null);
-  const [connected, setConnected] = useState(false);
+  const coupleIdRef = useRef(null);
 
   useEffect(() => {
-    // Connect to the socket server
+    const coupleId = localStorage.getItem('coupleId');
+    const coupleToken = localStorage.getItem('coupleToken');
+
+    if (!coupleId || !coupleToken) {
+      console.warn('SocketProvider: coupleId or coupleToken not found in localStorage. Skipping socket connection.');
+      return;
+    }
+
+    coupleIdRef.current = coupleId;
+
+    // Determine the Socket.IO server URL
+    const SOCKET_SERVER_URL = import.meta.env.VITE_API_URL ? 
+      import.meta.env.VITE_API_URL.replace('/api', '') : 
+      'http://localhost:5001';
+
     const newSocket = io(SOCKET_SERVER_URL, {
-      transports: ['websocket']
+      query: { coupleId, token: coupleToken },
+      transports: ['websocket'],
+      auth: {
+        token: coupleToken
+      }
     });
 
     newSocket.on('connect', () => {
-      console.log('Connected to socket server');
-      setConnected(true);
+      console.log('Socket.IO connected:', newSocket.id);
+      // Join a room specific to the couple
+      newSocket.emit('joinCoupleRoom', coupleId);
     });
 
     newSocket.on('disconnect', () => {
-      console.log('Disconnected from socket server');
-      setConnected(false);
+      console.log('Socket.IO disconnected');
+    });
+
+    newSocket.on('connect_error', (err) => {
+      console.error('Socket.IO connection error:', err.message);
     });
 
     setSocket(newSocket);
 
-    // Cleanup on unmount
     return () => {
-      newSocket.close();
+      if (newSocket) {
+        newSocket.emit('leaveCoupleRoom', coupleIdRef.current);
+        newSocket.disconnect();
+      }
     };
-  }, []);
+  }, []); // Empty dependency array to run only once on mount
 
   return (
-    <SocketContext.Provider value={{ socket, connected }}>
+    <SocketContext.Provider value={socket}>
       {children}
     </SocketContext.Provider>
   );

@@ -2,6 +2,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import './ChatUI.css';
 import { apiRequest } from '../services/api';
+import { useSocket } from '../context/SocketContext';
 
 const ChatUI = ({ coupleId, partnerName, partner1, partner2 }) => {
   const [messages, setMessages] = useState([]);
@@ -10,6 +11,7 @@ const ChatUI = ({ coupleId, partnerName, partner1, partner2 }) => {
   const messagesEndRef = useRef(null);
   const messagesContainerRef = useRef(null);
   const shouldAutoScroll = useRef(true);
+  const socket = useSocket();
 
   // Determine the other partner's name (not the current user)
   const otherPartner = partner1 === partnerName ? partner2 : partner1;
@@ -17,11 +19,18 @@ const ChatUI = ({ coupleId, partnerName, partner1, partner2 }) => {
   useEffect(() => {
     fetchChatHistory();
     
-    // Set up polling to check for new messages every 5 seconds
-    const interval = setInterval(fetchChatHistory, 5000);
-    
-    return () => clearInterval(interval);
-  }, [coupleId]); // Removed token from dependency array
+    if (socket) {
+      socket.on('chatMessage', (message) => {
+        console.log('Received chat message:', message);
+        setMessages(prev => [...prev, message]);
+      });
+
+      // Clean up event listener on component unmount
+      return () => {
+        socket.off('chatMessage');
+      };
+    }
+  }, [coupleId, socket]); // Added socket to dependency array
 
   // Monitor scroll position to determine if we should auto-scroll
   useEffect(() => {

@@ -1,22 +1,26 @@
 // coupleRoutes.js
 const express = require('express');
 const router = express.Router();
-const coupleController = require('../controllers/CoupleController');
+const CoupleController = require('../controllers/CoupleController');
 const { authenticateToken } = require('../middleware/authMiddleware');
 
-// Create a new couple
-router.post('/create', coupleController.createCouple);
+module.exports = (io) => {
+  const coupleController = new CoupleController(io);
 
-// Authenticate couple
-router.post('/authenticate', coupleController.authenticateCouple);
+  // Create a new couple
+  router.post('/create', coupleController.createCouple);
 
-// Get couple details
-router.get('/:coupleId', authenticateToken, coupleController.getCouple);
+  // Authenticate couple
+  router.post('/authenticate', coupleController.authenticateCouple);
 
-// Update couple status
-router.put('/:coupleId/status', authenticateToken, coupleController.updateStatus);
+  // Get couple details
+  router.get('/:coupleId', authenticateToken, coupleController.getCouple);
 
-// Reset status for new day (admin/automated use)
-router.put('/:coupleId/reset-status', authenticateToken, coupleController.resetStatusForNewDay);
+  // Update couple status
+  router.put('/:coupleId/status', authenticateToken, coupleController.updateStatus);
 
-module.exports = router;
+  // Reset status for new day (admin/automated use)
+  router.put('/:coupleId/reset-status', authenticateToken, coupleController.resetStatusForNewDay);
+
+  return router;
+};
