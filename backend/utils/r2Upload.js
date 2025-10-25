@@ -26,12 +26,10 @@ async function uploadImageToR2(imageBuffer, originalName, folder = 'snaps') {
     
     console.log('Upload to R2 successful');
     
-    // Return the public URL for the uploaded image
-    // const imageUrl = `https://396e002de9ba2adacec4dcb72f7c96c2.r2.cloudflarestorage.com/anush-dev/${uniqueFileName}`;
-    
+
     return {
       success: true,
-      // imageUrl, // No longer returning direct URL
+
       r2Key: uniqueFileName
     };
   } catch (error) {
