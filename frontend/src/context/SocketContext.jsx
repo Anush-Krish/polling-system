@@ -4,7 +4,7 @@ import io from 'socket.io-client';
 const SocketContext = createContext();
 
 // Use VITE_API_URL environment variable, fallback to default
-const SOCKET_SERVER_URL = import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:5001';
+const SOCKET_SERVER_URL = import.meta.env.VITE_API_URL?.replace('/api', '') || '';
 
 export const useSocket = () => {
   return useContext(SocketContext);
