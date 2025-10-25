@@ -49,6 +49,7 @@ const CoupleAuth = ({ onAuthSuccess }) => {
             'Content-Type': 'application/json'
           },
           body: JSON.stringify({
+            coupleName: formData.coupleName,
             accessCode: formData.accessCode,
             partnerName: formData.partnerName
           })
@@ -62,27 +63,8 @@ const CoupleAuth = ({ onAuthSuccess }) => {
       
       const data = await response.json();
       
-      // Create session for the authenticated partner
-      const sessionResponse = await fetch('http://localhost:5001/api/sessions/create', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          coupleId: data.data._id,
-          accessCode: formData.accessCode,
-          partnerName: isCreating ? formData.partner1 : formData.partnerName
-        })
-      });
-      
-      if (!sessionResponse.ok) {
-        throw new Error('Failed to create session');
-      }
-      
-      const sessionData = await sessionResponse.json();
-      
-      // Store token in localStorage
-      localStorage.setItem('coupleToken', sessionData.data.token);
+      // Store token and couple data in localStorage
+      localStorage.setItem('coupleToken', data.data.token);
       localStorage.setItem('coupleId', data.data._id);
       localStorage.setItem('partnerName', isCreating ? formData.partner1 : formData.partnerName);
       
@@ -153,17 +135,30 @@ const CoupleAuth = ({ onAuthSuccess }) => {
           </div>
           
           {!isCreating && (
-            <div className="form-group">
-              <label htmlFor="partnerName">Your Name</label>
-              <input
-                type="text"
-                id="partnerName"
-                name="partnerName"
-                value={formData.partnerName}
-                onChange={handleChange}
-                required
-              />
-            </div>
+            <>
+              <div className="form-group">
+                <label htmlFor="coupleName">Couple Name</label>
+                <input
+                  type="text"
+                  id="coupleName"
+                  name="coupleName"
+                  value={formData.coupleName}
+                  onChange={handleChange}
+                  required
+                />
+              </div>
+              <div className="form-group">
+                <label htmlFor="partnerName">Your Name</label>
+                <input
+                  type="text"
+                  id="partnerName"
+                  name="partnerName"
+                  value={formData.partnerName}
+                  onChange={handleChange}
+                  required
+                />
+              </div>
+            </>
           )}
           
           <button type="submit" className="auth-btn">

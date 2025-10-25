@@ -14,13 +14,23 @@ const apiRequest = async (endpoint, options = {}) => {
   };
 
   // Add auth token if available
-  const token = localStorage.getItem('token');
+  const token = localStorage.getItem('coupleToken'); // Changed from 'token' to 'coupleToken'
   if (token && !config.headers.Authorization) {
-    config.headers.Authorization = `Bearer ${token}`;
+    config.headers.Authorization = token; // Token is already 'Bearer <token>' from backend
   }
 
   try {
     const response = await fetch(url, config);
+    
+    if (response.status === 401 || response.status === 403) {
+      // Handle unauthorized or forbidden access - logout user
+      localStorage.removeItem('coupleToken');
+      localStorage.removeItem('coupleId');
+      localStorage.removeItem('partnerName');
+      window.location.href = '/'; // Redirect to home/login page
+      throw new Error('Session expired or unauthorized. Please log in again.');
+    }
+
     const data = await response.json();
 
     if (!response.ok) {
@@ -34,76 +44,4 @@ const apiRequest = async (endpoint, options = {}) => {
   }
 };
 
-// Authentication API functions
-const authAPI = {
-  // Register a new user
-  register: (userData) => apiRequest('/users/register', {
-    method: 'POST',
-    body: JSON.stringify(userData),
-  }),
-
-  // Login user
-  login: (credentials) => apiRequest('/users/login', {
-    method: 'POST',
-    body: JSON.stringify(credentials),
-  }),
-
-  // Get user profile
-  getProfile: () => apiRequest('/users/profile'),
-
-  // Update user profile
-  updateProfile: (userData) => apiRequest('/users/profile', {
-    method: 'PUT',
-    body: JSON.stringify(userData),
-  }),
-};
-
-// Poll API functions
-const pollAPI = {
-  // Create a new poll
-  createPoll: (pollData) => apiRequest('/polls', {
-    method: 'POST',
-    body: JSON.stringify(pollData),
-  }),
-
-  // Get all polls
-  getAllPolls: () => apiRequest('/polls'),
-
-  // Get a specific poll by ID
-  getPollById: (id) => apiRequest(`/polls/${id}`),
-
-  // Update a poll
-  updatePoll: (id, pollData) => apiRequest(`/polls/${id}`, {
-    method: 'PUT',
-    body: JSON.stringify(pollData),
-  }),
-
-  // Delete a poll
-  deletePoll: (id) => apiRequest(`/polls/${id}`, {
-    method: 'DELETE',
-  }),
-
-  // Vote on a poll
-  voteOnPoll: (pollId, optionIndex) => apiRequest(`/polls/${pollId}/vote`, {
-    method: 'POST',
-    body: JSON.stringify({ optionIndex }),
-  }),
-
-  // Add a participant to a poll
-  addParticipant: (pollId, participantName) => apiRequest(`/polls/${pollId}/participate`, {
-    method: 'POST',
-    body: JSON.stringify({ name: participantName }),
-  }),
-
-  // Remove a participant from a poll
-  removeParticipant: (pollId, participantId) => apiRequest(`/polls/${pollId}/participant/${participantId}`, {
-    method: 'DELETE',
-  }),
-
-  // End a poll
-  endPoll: (pollId) => apiRequest(`/polls/${pollId}/end`, {
-    method: 'PUT',
-  }),
-};
-
-export { authAPI, pollAPI };
+export { apiRequest };

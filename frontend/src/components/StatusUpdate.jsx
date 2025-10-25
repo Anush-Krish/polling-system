@@ -1,8 +1,9 @@
 // StatusUpdate.jsx
 import React, { useState, useEffect } from 'react';
 import './StatusUpdate.css';
+import { apiRequest } from '../services/api';
 
-const StatusUpdate = ({ coupleId, currentStatus, token, onStatusUpdate }) => {
+const StatusUpdate = ({ coupleId, currentStatus, onStatusUpdate }) => {
   const [status, setStatus] = useState(currentStatus || 'Not updated today');
   const [location, setLocation] = useState(null);
   const [locationError, setLocationError] = useState('');
@@ -37,24 +38,14 @@ const StatusUpdate = ({ coupleId, currentStatus, token, onStatusUpdate }) => {
     setIsUpdating(true);
     
     try {
-      const response = await fetch(`http://localhost:5001/api/couples/${coupleId}/status`, {
+      const data = await apiRequest(`/couples/${coupleId}/status`, {
         method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': token
-        },
         body: JSON.stringify({
           status,
           location: location || null  // Send null if location is not available
         })
       });
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || 'Failed to update status');
-      }
-
-      const data = await response.json();
       onStatusUpdate(data.data.status);
       alert('Status updated successfully!');
     } catch (error) {

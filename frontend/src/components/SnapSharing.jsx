@@ -1,8 +1,9 @@
 // SnapSharing.jsx
 import React, { useState, useRef, useEffect } from 'react';
 import './SnapSharing.css';
+import { apiRequest } from '../services/api';
 
-const SnapSharing = ({ coupleId, token, partnerName }) => {
+const SnapSharing = ({ coupleId, partnerName }) => {
   const [snaps, setSnaps] = useState([]);
   const [uploading, setUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
@@ -18,7 +19,7 @@ const SnapSharing = ({ coupleId, token, partnerName }) => {
 
   useEffect(() => {
     fetchTodaysSnaps();
-  }, [coupleId, token]);
+  }, [coupleId]); // Removed token from dependency array
 
   useEffect(() => {
     if (useCamera) {
@@ -66,17 +67,7 @@ const SnapSharing = ({ coupleId, token, partnerName }) => {
 
   const fetchTodaysSnaps = async () => {
     try {
-      const response = await fetch(`http://localhost:5001/api/snaps/today/couple/${coupleId}`, {
-        headers: {
-          'Authorization': token
-        }
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to fetch snaps');
-      }
-
-      const data = await response.json();
+      const data = await apiRequest(`/snaps/today/couple/${coupleId}`);
       setSnaps(data.data);
     } catch (error) {
       console.error('Error fetching snaps:', error);
@@ -153,12 +144,8 @@ const SnapSharing = ({ coupleId, token, partnerName }) => {
       // Update progress during upload
       setUploadProgress(30);
       
-      const response = await fetch('http://localhost:5001/api/snaps/upload', {
+      const data = await apiRequest('/snaps/upload', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': token
-        },
         body: JSON.stringify({
           coupleId,
           uploadedBy: partnerName,
@@ -167,14 +154,8 @@ const SnapSharing = ({ coupleId, token, partnerName }) => {
         })
       });
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || 'Failed to upload snap');
-      }
-
       setUploadProgress(100);
 
-      const data = await response.json();
       setSnaps(prev => [data.data, ...prev]);
       setLastUploadedSnap(data.data); // Set the last uploaded snap
       setImagePreview(null);
@@ -196,19 +177,10 @@ const SnapSharing = ({ coupleId, token, partnerName }) => {
     }
 
     try {
-      const response = await fetch(`http://localhost:5001/api/snaps/${snapId}`, {
+      await apiRequest(`/snaps/${snapId}`, {
         method: 'DELETE',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': token
-        },
         body: JSON.stringify({ partnerName })
       });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || 'Failed to delete snap');
-      }
 
       setSnaps(prev => prev.filter(snap => snap._id !== snapId));
       alert('Snap deleted successfully');

@@ -2,6 +2,8 @@
 const Couple = require('../entity/Couple');
 const Session = require('../entity/Session');
 const CoupleDTO = require('../dto/CoupleDTO');
+const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
 
 class CoupleService {
   // Create a new couple
@@ -16,7 +18,13 @@ class CoupleService {
         throw new Error('Couple with this access code already exists');
       }
       
-      const couple = new Couple(validatedData.toObject());
+      // Hash the access code
+      const hashedPassword = await bcrypt.hash(coupleData.accessCode, 10);
+      
+      const couple = new Couple({
+        ...validatedData.toObject(),
+        accessCode: hashedPassword // Store hashed access code
+      });
       await couple.save();
       
       return couple;
@@ -26,21 +34,57 @@ class CoupleService {
   }
 
   // Authenticate a couple using access code
-  async authenticateCouple(accessCode, partnerName) {
+  async authenticateCouple(coupleName, accessCode, partnerName) {
     try {
-      const couple = await Couple.findOne({ accessCode, isActive: true });
+      console.log('Attempting to authenticate couple...');
+      console.log('Provided coupleName:', coupleName);
+      console.log('Provided accessCode:', accessCode);
+      console.log('Provided partnerName:', partnerName);
+
+      const couple = await Couple.findOne({ coupleName, isActive: true });
       
       if (!couple) {
+        console.log('Couple not found or inactive.');
+        throw new Error('Invalid couple name or couple not found');
+      }
+      console.log('Couple found:', couple.coupleName, couple._id);
+      console.log('Stored hashed accessCode:', couple.accessCode);
+
+      // Compare provided access code with hashed access code
+      const isMatch = await bcrypt.compare(accessCode, couple.accessCode);
+      console.log('bcrypt.compare result (isMatch):', isMatch);
+      if (!isMatch) {
         throw new Error('Invalid access code');
       }
       
       // Check if the partner name matches one of the partners
       if (couple.partner1 !== partnerName && couple.partner2 !== partnerName) {
+        console.log('Partner name mismatch. Stored partners:', couple.partner1, couple.partner2);
         throw new Error('Invalid partner name');
       }
+      console.log('Partner name matched.');
       
-      return couple;
+      // Generate JWT
+      const token = jwt.sign(
+        { coupleId: couple._id, partnerName: partnerName },
+        process.env.JWT_SECRET,
+        { expiresIn: process.env.JWT_EXPIRES_IN }
+      );
+      console.log('JWT generated.');
+
+      // Create a session entry
+      const session = new Session({
+        token: token,
+        coupleId: couple._id,
+        partnerName: partnerName,
+        expiresAt: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000) // 3 days from now
+      });
+      await session.save();
+      console.log('Session saved.');
+      
+      return { couple, token };
     } catch (error) {
+      console.error('Authentication failed in service:', error.message);
       throw new Error(`Authentication failed: ${error.message}`);
     }
   }

@@ -8,7 +8,6 @@ const sessionSchema = new mongoose.Schema({
   },
   accessCode: {
     type: String,
-    required: true,
     trim: true
   },
   partnerName: {

@@ -1,8 +1,9 @@
 // ChatUI.jsx
 import React, { useState, useEffect, useRef } from 'react';
 import './ChatUI.css';
+import { apiRequest } from '../services/api';
 
-const ChatUI = ({ coupleId, token, partnerName, partner1, partner2 }) => {
+const ChatUI = ({ coupleId, partnerName, partner1, partner2 }) => {
   const [messages, setMessages] = useState([]);
   const [newMessage, setNewMessage] = useState('');
   const [error, setError] = useState('');
@@ -20,7 +21,7 @@ const ChatUI = ({ coupleId, token, partnerName, partner1, partner2 }) => {
     const interval = setInterval(fetchChatHistory, 5000);
     
     return () => clearInterval(interval);
-  }, [coupleId, token]);
+  }, [coupleId]); // Removed token from dependency array
 
   // Monitor scroll position to determine if we should auto-scroll
   useEffect(() => {
@@ -54,17 +55,7 @@ const ChatUI = ({ coupleId, token, partnerName, partner1, partner2 }) => {
 
   const fetchChatHistory = async () => {
     try {
-      const response = await fetch(`http://localhost:5001/api/chat/history/${coupleId}`, {
-        headers: {
-          'Authorization': token
-        }
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to fetch chat history');
-      }
-
-      const data = await response.json();
+      const data = await apiRequest(`/chat/history/${coupleId}`);
       setMessages(data.data);
     } catch (error) {
       console.error('Error fetching chat history:', error);
@@ -80,12 +71,8 @@ const ChatUI = ({ coupleId, token, partnerName, partner1, partner2 }) => {
     }
 
     try {
-      const response = await fetch('http://localhost:5001/api/chat/send', {
+      const data = await apiRequest('/chat/send', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': token
-        },
         body: JSON.stringify({
           coupleId,
           sender: partnerName,
@@ -93,12 +80,6 @@ const ChatUI = ({ coupleId, token, partnerName, partner1, partner2 }) => {
         })
       });
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || 'Failed to send message');
-      }
-
-      const data = await response.json();
       setMessages(prev => [...prev, data.data]);
       setNewMessage('');
     } catch (error) {

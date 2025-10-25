@@ -3,41 +3,29 @@ import React, { useState, useEffect } from 'react';
 import SnapSharing from '../components/SnapSharing';
 import ChatBubble from '../components/ChatBubble';
 import './DashboardPage.css';
+import { apiRequest } from '../services/api';
 
 const DashboardPage = () => {
   const [coupleData, setCoupleData] = useState(null);
-  const [token, setToken] = useState('');
   const [partnerName, setPartnerName] = useState('');
 
   useEffect(() => {
     // Get session data from localStorage
-    const storedToken = localStorage.getItem('coupleToken');
     const storedCoupleId = localStorage.getItem('coupleId');
     const storedPartnerName = localStorage.getItem('partnerName');
     
-    if (!storedToken || !storedCoupleId || !storedPartnerName) {
+    if (!storedCoupleId || !storedPartnerName) {
       // Redirect to auth if no session data
       window.location.href = '/';
       return;
     }
     
-    setToken(storedToken);
     setPartnerName(storedPartnerName);
     
     // Get couple data
     const fetchCoupleData = async () => {
       try {
-        const response = await fetch(`http://localhost:5001/api/couples/${storedCoupleId}`, {
-          headers: {
-            'Authorization': storedToken
-          }
-        });
-        
-        if (!response.ok) {
-          throw new Error('Failed to fetch couple data');
-        }
-        
-        const data = await response.json();
+        const data = await apiRequest(`/couples/${storedCoupleId}`);
         setCoupleData(data.data);
       } catch (error) {
         console.error('Error fetching couple data:', error);
@@ -76,7 +64,6 @@ const DashboardPage = () => {
         <div className="dashboard-card snaps-card">
           <SnapSharing 
             coupleId={coupleData._id} 
-            token={token}
             partnerName={partnerName}
           />
         </div>
@@ -84,7 +71,6 @@ const DashboardPage = () => {
       
       <ChatBubble
         coupleId={coupleData._id}
-        token={token}
         partnerName={partnerName}
         partner1={coupleData.partner1}
         partner2={coupleData.partner2}

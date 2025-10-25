@@ -37,9 +37,9 @@ class CoupleController {
   // Authenticate couple
   async authenticateCouple(req, res) {
     try {
-      const { accessCode, partnerName } = req.body;
+      const { coupleName, accessCode, partnerName } = req.body;
 
-      const couple = await CoupleService.authenticateCouple(accessCode, partnerName);
+      const { couple, token } = await CoupleService.authenticateCouple(coupleName, accessCode, partnerName);
 
       res.status(200).json({
         success: true,
@@ -50,7 +50,8 @@ class CoupleController {
           partner1: couple.partner1,
           partner2: couple.partner2,
           status: couple.status,
-          location: couple.location
+          location: couple.location,
+          token: token // Return the JWT to the frontend
         }
       });
     } catch (error) {
