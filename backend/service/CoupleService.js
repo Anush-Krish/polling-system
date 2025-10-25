@@ -4,6 +4,7 @@ const Session = require('../entity/Session');
 const CoupleDTO = require('../dto/CoupleDTO');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
+const SessionService = require('./SessionService'); // Import SessionService
 
 class CoupleService {
   // Create a new couple
@@ -63,6 +64,10 @@ class CoupleService {
         throw new Error('Invalid partner name');
       }
       console.log('Partner name matched.');
+
+      // Invalidate any existing active sessions for this partner in this couple
+      await SessionService.invalidateOldSessions(couple._id, partnerName);
+      console.log('Old sessions invalidated.');
       
       // Generate JWT
       const token = jwt.sign(

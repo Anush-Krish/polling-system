@@ -40,6 +40,7 @@ const coupleRoutes = require('./routes/coupleRoutes');
 const sessionRoutes = require('./routes/sessionRoutes');
 const snapRoutes = require('./routes/snapRoutes');
 const chatRoutes = require('./routes/chatRoutes');
+const SessionService = require('./service/SessionService'); // Import SessionService
 
 // Use routes
 app.use('/api/couples', coupleRoutes);
@@ -52,8 +53,16 @@ app.get('/', (req, res) => {
   res.send('Shunush API');
 });
 
-
-
 server.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
+
+  // Schedule periodic cleanup of expired sessions
+  setInterval(async () => {
+    try {
+      const result = await SessionService.cleanExpiredSessions();
+      console.log(`Cleaned up ${result.deletedCount} expired sessions.`);
+    } catch (error) {
+      console.error('Error during expired session cleanup:', error);
+    }
+  }, 24 * 60 * 60 * 1000); // Run once every 24 hours
 });

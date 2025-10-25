@@ -1,44 +1,13 @@
 // SessionService.js
 const Session = require('../entity/Session');
 const jwt = require('jsonwebtoken');
-const SessionDTO = require('../dto/SessionDTO');
+// SessionDTO is no longer needed as session creation is handled directly
+// const SessionDTO = require('../dto/SessionDTO');
 
 class SessionService {
   constructor() {
-    this.JWT_SECRET = process.env.JWT_SECRET || 'fallback_secret_key';
-  }
-
-  // Create a new session for a couple
-  async createSession(coupleId, accessCode, partnerName) {
-    try {
-      // Generate JWT token
-      const token = jwt.sign(
-        { coupleId: coupleId.toString(), partnerName },
-        this.JWT_SECRET,
-        { expiresIn: '24h' }
-      );
-
-      // Create session object using DTO
-      const sessionData = {
-        coupleId,
-        accessCode,
-        partnerName,
-        token,
-        expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000) // 24 hours from now
-      };
-
-      const validatedSession = SessionDTO.create(sessionData);
-      const session = new Session(validatedSession.toObject());
-      await session.save();
-
-      return {
-        token: session.token,
-        partnerName: session.partnerName,
-        expiresAt: session.expiresAt
-      };
-    } catch (error) {
-      throw new Error(`Failed to create session: ${error.message}`);
-    }
+    // Use process.env directly, no need for fallback here as dotenv is loaded
+    this.JWT_SECRET = process.env.JWT_SECRET;
   }
 
   // Verify session token
@@ -79,6 +48,19 @@ class SessionService {
       return { message: 'Session deactivated successfully' };
     } catch (error) {
       throw new Error(`Failed to deactivate session: ${error.message}`);
+    }
+  }
+
+  // Invalidate all active sessions for a specific partner within a couple
+  async invalidateOldSessions(coupleId, partnerName) {
+    try {
+      await Session.updateMany(
+        { coupleId, partnerName, isActive: true },
+        { isActive: false }
+      );
+      return { message: `Old sessions for ${partnerName} in couple ${coupleId} invalidated.` };
+    } catch (error) {
+      throw new Error(`Failed to invalidate old sessions: ${error.message}`);
     }
   }
 
