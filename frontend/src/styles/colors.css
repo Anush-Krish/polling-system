@@ -4,35 +4,51 @@ Based on the provided design specifications
 */
 
 :root {
-  /* Primary Colors from design */
-  --primary-1: #7765DA; /* Light purple */
-  --primary-2: #5767D0; /* Medium blue-purple */
-  --primary-3: #4F0DCE; /* Dark purple */
-  
-  /* Neutral Colors from design */
-  --neutral-1: #F2F2F2; /* Light gray/white */
-  --neutral-2: #373737; /* Dark gray */
-  --neutral-3: #6E6E6E; /* Medium gray */
-  
+  /* Modern Primary Colors */
+  --primary-1: #8B5CF6;
+  /* Violet */
+  --primary-2: #7C3AED;
+  /* Darker Violet */
+  --primary-3: #6D28D9;
+  /* Deep Violet */
+
+  /* Gradients */
+  --gradient-primary: linear-gradient(135deg, #8B5CF6 0%, #EC4899 100%);
+  --gradient-hover: linear-gradient(135deg, #7C3AED 0%, #DB2777 100%);
+  --gradient-bg: linear-gradient(135deg, #F3F4F6 0%, #E5E7EB 100%);
+
+  /* Glassmorphism */
+  --glass-bg: rgba(255, 255, 255, 0.7);
+  --glass-border: rgba(255, 255, 255, 0.5);
+  --glass-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.15);
+
+  /* Neutral Colors */
+  --neutral-1: #F9FAFB;
+  /* Ultra light gray */
+  --neutral-2: #1F2937;
+  /* Dark gray/black */
+  --neutral-3: #6B7280;
+  /* Medium gray */
+
   /* Background Colors */
-  --bg-primary: #FFFFFF; /* White background */
-  --bg-secondary: #F2F2F2; /* Light gray background */
-  
+  --bg-primary: #FFFFFF;
+  --bg-secondary: #F3F4F6;
+
   /* Text Colors */
-  --text-primary: #373737; /* Dark gray text */
-  --text-secondary: #6E6E6E; /* Medium gray text */
-  --text-inverted: #FFFFFF; /* White text on dark backgrounds */
-  
+  --text-primary: #111827;
+  --text-secondary: #4B5563;
+  --text-inverted: #FFFFFF;
+
   /* Button Colors */
-  --btn-primary: #7765DA; /* Purple button */
-  --btn-primary-hover: #5767D0; /* Blue-purple button on hover */
-  --btn-primary-active: #4F0DCE; /* Dark purple button when active */
-  
+  --btn-primary: #8B5CF6;
+  --btn-primary-hover: #7C3AED;
+  --btn-primary-active: #6D28D9;
+
   /* Border Colors */
-  --border-default: #E0E0E0; /* Light gray border */
-  --border-strong: #CCCCCC; /* Medium gray border */
-  --border-accent: #7765DA; /* Purple accent border */
-  
+  --border-default: #E5E7EB;
+  --border-strong: #D1D5DB;
+  --border-accent: #8B5CF6;
+
   /* Shadow Colors */
   --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
   --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);

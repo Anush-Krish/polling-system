@@ -110,7 +110,7 @@ const SnapSharing = ({ coupleId, partnerName }) => {
       const video = videoRef.current;
       const canvas = canvasRef.current;
       const context = canvas.getContext('2d');
-      
+
       if (video.videoWidth > 0 && video.videoHeight > 0) {
         canvas.width = video.videoWidth;
         canvas.height = video.videoHeight;
@@ -143,7 +143,7 @@ const SnapSharing = ({ coupleId, partnerName }) => {
     try {
       // Update progress during upload
       setUploadProgress(30);
-      
+
       const data = await apiRequest('/snaps/upload', {
         method: 'POST',
         body: JSON.stringify({
@@ -193,52 +193,50 @@ const SnapSharing = ({ coupleId, partnerName }) => {
   return (
     <div className="snap-sharing-container">
       <h3>Share Daily Snaps</h3>
-      
+
       {error && <div className="error-message">{error}</div>}
-      
+
       <div className="upload-section">
         {!useCamera ? (
           <>
-            <input
-              type="file"
-              ref={fileInputRef}
-              accept="image/*"
-              onChange={handleImageChange}
-              className="file-input"
-            />
-            <button onClick={startCamera} className="camera-btn">
-              Use Camera
-            </button>
+            <div className="upload-controls">
+              <label className="file-label">
+                <input
+                  type="file"
+                  ref={fileInputRef}
+                  accept="image/*"
+                  onChange={handleImageChange}
+                  className="file-input"
+                />
+                <span>🖼️ Gallery</span>
+              </label>
+              <button onClick={startCamera} className="camera-btn">
+                <span>📸 Camera</span>
+              </button>
+            </div>
           </>
         ) : (
-          // Camera view - use a modal instead of full-screen to avoid complications
           <div className="camera-modal">
-            <div className="camera-modal-content">
-              <div className="camera-header">
-                <span>Camera</span>
-                <button onClick={stopCamera} className="close-btn">✕</button>
-              </div>
-              <div className="camera-container">
-                <video ref={videoRef} className="camera-video" playsInline />
-                {!videoLoaded && (
-                  <div className="video-loading-overlay">
-                    <p>Loading camera...</p>
-                  </div>
-                )}
-                <canvas ref={canvasRef} style={{ display: 'none' }} />
-              </div>
+            <button onClick={stopCamera} className="close-camera-btn">✕</button>
+            <div className="camera-container">
+              <video ref={videoRef} className="camera-video" playsInline />
+              {!videoLoaded && (
+                <div className="video-loading-overlay">
+                  <p>Loading camera...</p>
+                </div>
+              )}
+              <canvas ref={canvasRef} style={{ display: 'none' }} />
               <div className="camera-controls">
-                <button 
-                  onClick={captureImage} 
+                <button
+                  onClick={captureImage}
                   className="capture-btn"
-                >
-                  Capture
-                </button>
+                  aria-label="Capture photo"
+                />
               </div>
             </div>
           </div>
         )}
-        
+
         {/* Show image preview when available and not using camera */}
         {!useCamera && imagePreview && !lastUploadedSnap && (
           <div className="image-preview">
@@ -253,48 +251,55 @@ const SnapSharing = ({ coupleId, partnerName }) => {
             <img src={lastUploadedSnap.imageUrl} alt="Last uploaded snap" />
           </div>
         )}
-        
+
         {uploading ? (
           <div className="upload-progress">
             <div className="progress-bar">
-              <div 
-                className="progress-fill" 
+              <div
+                className="progress-fill"
                 style={{ width: `${uploadProgress}%` }}
               ></div>
             </div>
             <p>Uploading... {uploadProgress}%</p>
           </div>
         ) : (
-          <button 
-            onClick={handleUpload} 
-            disabled={!imagePreview}
-            className="upload-btn"
-          >
-            Upload Snap
-          </button>
+          !useCamera && (
+            <button
+              onClick={handleUpload}
+              disabled={!imagePreview}
+              className="upload-btn"
+            >
+              Share Snap
+            </button>
+          )
         )}
       </div>
-      
+
       <div className="snaps-grid">
         {snaps.length === 0 ? (
-          <p>No snaps shared today yet.</p>
+          <p style={{ textAlign: 'center', color: 'var(--text-secondary)', gridColumn: '1/-1' }}>
+            No snaps shared today yet. Be the first!
+          </p>
         ) : (
           snaps.map(snap => (
             <div key={snap._id} className="snap-item">
-              <div className="snap-header">
-                <span className="uploaded-by">{snap.uploadedBy}</span>
-                <span className="upload-time">
-                  {new Date(snap.uploadDate).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                </span>
-              </div>
               <img src={snap.imageUrl} alt="Shared" />
-              {snap.caption && <p className="snap-caption">{snap.caption}</p>}
+              <div className="snap-info">
+                <div className="snap-header">
+                  <span className="uploaded-by">{snap.uploadedBy}</span>
+                  <span className="upload-time">
+                    {new Date(snap.uploadDate).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                  </span>
+                </div>
+                {snap.caption && <p className="snap-caption">{snap.caption}</p>}
+              </div>
               {snap.uploadedBy === partnerName && (
-                <button 
+                <button
                   onClick={() => handleDeleteSnap(snap._id)}
                   className="delete-snap-btn"
+                  title="Delete snap"
                 >
-                  Delete
+                  ✕
                 </button>
               )}
             </div>
