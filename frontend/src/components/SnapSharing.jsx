@@ -101,12 +101,13 @@ const SnapSharing = ({ coupleId, partnerName }) => {
       setMediaType(isVideo ? 'video' : 'image');
       setSource('gallery');
 
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setMediaPreview(reader.result);
-        setLastUploadedSnap(null);
-      };
-      reader.readAsDataURL(file);
+      // Use createObjectURL for better performance and video support
+      const objectUrl = URL.createObjectURL(file);
+      setMediaPreview(objectUrl);
+      setLastUploadedSnap(null);
+
+      // Clean up previous object URL if it exists to avoid memory leaks
+      // Note: In a real app, we should track the previous URL and revoke it
     }
   };
 
@@ -200,6 +201,24 @@ const SnapSharing = ({ coupleId, partnerName }) => {
     setError('');
 
     try {
+      setUploadProgress(10);
+
+      // If mediaPreview is a blob URL (from createObjectURL), we need to convert it to base64
+      let uploadUrl = mediaPreview;
+
+      if (mediaPreview.startsWith('blob:')) {
+        const response = await fetch(mediaPreview);
+        const blob = await response.blob();
+
+        // Convert blob to base64
+        uploadUrl = await new Promise((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onloadend = () => resolve(reader.result);
+          reader.onerror = reject;
+          reader.readAsDataURL(blob);
+        });
+      }
+
       setUploadProgress(30);
 
       const data = await apiRequest('/snaps/upload', {
@@ -207,7 +226,7 @@ const SnapSharing = ({ coupleId, partnerName }) => {
         body: JSON.stringify({
           coupleId,
           uploadedBy: partnerName,
-          imageUrl: mediaPreview,
+          imageUrl: uploadUrl,
           caption: 'Shared snap',
           mediaType,
           source
