@@ -16,10 +16,10 @@ const ChatUI = ({ coupleId, partnerName, partner1, partner2 }) => {
 
   useEffect(() => {
     fetchChatHistory();
-    
+
     // Set up polling to check for new messages every 5 seconds
     const interval = setInterval(fetchChatHistory, 5000);
-    
+
     return () => clearInterval(interval);
   }, [coupleId]); // Removed token from dependency array
 
@@ -33,7 +33,7 @@ const ChatUI = ({ coupleId, partnerName, partner1, partner2 }) => {
       const threshold = 30; // pixels from bottom
       const position = container.scrollTop + container.clientHeight;
       const height = container.scrollHeight;
-      
+
       // Auto-scroll when near bottom, stop auto-scrolling when user scrolls up
       shouldAutoScroll.current = position >= height - threshold;
     };
@@ -65,7 +65,7 @@ const ChatUI = ({ coupleId, partnerName, partner1, partner2 }) => {
 
   const handleSendMessage = async (e) => {
     e.preventDefault();
-    
+
     if (!newMessage.trim()) {
       return;
     }
@@ -94,14 +94,14 @@ const ChatUI = ({ coupleId, partnerName, partner1, partner2 }) => {
 
   return (
     <div className="chat-container">
-      <h3>Leave a message for {otherPartner}</h3>
-      
+      {/* Header removed as it is provided by the modal */}
+
       {error && <div className="error-message">{error}</div>}
-      
+
       <div className="messages-container" ref={messagesContainerRef}>
         {messages.map(message => (
-          <div 
-            key={message._id} 
+          <div
+            key={message._id}
             className={`message ${message.sender === partnerName ? 'sent' : 'received'}`}
           >
             <div className="message-content">
@@ -117,7 +117,7 @@ const ChatUI = ({ coupleId, partnerName, partner1, partner2 }) => {
         ))}
         <div ref={messagesEndRef} />
       </div>
-      
+
       <form className="message-form" onSubmit={handleSendMessage}>
         <input
           type="text"

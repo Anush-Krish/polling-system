@@ -31,6 +31,16 @@ const snapSchema = new mongoose.Schema({
     required: false,
     trim: true
   },
+  mediaType: {
+    type: String,
+    enum: ['image', 'video'],
+    default: 'image'
+  },
+  source: {
+    type: String,
+    enum: ['camera', 'gallery'],
+    default: 'gallery'
+  },
   uploadDate: {
     type: Date,
     default: Date.now

@@ -8,11 +8,18 @@ const SnapSharing = ({ coupleId, partnerName }) => {
   const [uploading, setUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
   const [error, setError] = useState('');
-  const [imagePreview, setImagePreview] = useState(null);
+  const [mediaPreview, setMediaPreview] = useState(null);
+  const [mediaType, setMediaType] = useState('image'); // 'image' or 'video'
+  const [source, setSource] = useState('gallery'); // 'camera' or 'gallery'
   const [useCamera, setUseCamera] = useState(false);
   const [stream, setStream] = useState(null);
   const [videoLoaded, setVideoLoaded] = useState(false);
   const [lastUploadedSnap, setLastUploadedSnap] = useState(null);
+  const [facingMode, setFacingMode] = useState('user'); // 'user' or 'environment'
+  const [isRecording, setIsRecording] = useState(false);
+  const [mediaRecorder, setMediaRecorder] = useState(null);
+  const [recordedChunks, setRecordedChunks] = useState([]);
+
   const fileInputRef = useRef(null);
   const videoRef = useRef(null);
   const canvasRef = useRef(null);
@@ -29,9 +36,13 @@ const SnapSharing = ({ coupleId, partnerName }) => {
       let mediaStream;
       const enableCamera = async () => {
         try {
+          if (stream) {
+            stream.getTracks().forEach(track => track.stop());
+          }
+
           mediaStream = await navigator.mediaDevices.getUserMedia({
-            video: { facingMode: "user" },
-            audio: false,
+            video: { facingMode: facingMode },
+            audio: true, // Enable audio for video recording
           });
           setStream(mediaStream);
           if (videoRef.current) {
@@ -63,7 +74,7 @@ const SnapSharing = ({ coupleId, partnerName }) => {
         setStream(null);
       }
     }
-  }, [useCamera]);
+  }, [useCamera, facingMode]);
 
   const fetchTodaysSnaps = async () => {
     try {
@@ -75,25 +86,25 @@ const SnapSharing = ({ coupleId, partnerName }) => {
     }
   };
 
-  const handleImageChange = (e) => {
+  const handleFileChange = (e) => {
     const file = e.target.files[0];
     if (file) {
-      // Check if it's an image
-      if (!file.type.match('image.*')) {
-        setError('Please select an image file');
+      // Check file size (max 50MB for video, 5MB for image)
+      const isVideo = file.type.match('video.*');
+      const maxSize = isVideo ? 50 * 1024 * 1024 : 5 * 1024 * 1024;
+
+      if (file.size > maxSize) {
+        setError(`File size exceeds limit (${isVideo ? '50MB' : '5MB'})`);
         return;
       }
 
-      // Check file size (max 5MB)
-      if (file.size > 5 * 1024 * 1024) {
-        setError('File size exceeds 5MB limit');
-        return;
-      }
+      setMediaType(isVideo ? 'video' : 'image');
+      setSource('gallery');
 
       const reader = new FileReader();
       reader.onloadend = () => {
-        setImagePreview(reader.result);
-        setLastUploadedSnap(null); // Clear the last uploaded snap when a new image is selected
+        setMediaPreview(reader.result);
+        setLastUploadedSnap(null);
       };
       reader.readAsDataURL(file);
     }
@@ -103,6 +114,11 @@ const SnapSharing = ({ coupleId, partnerName }) => {
     setError('');
     setVideoLoaded(false);
     setUseCamera(true);
+    setSource('camera');
+  };
+
+  const flipCamera = () => {
+    setFacingMode(prev => prev === 'user' ? 'environment' : 'user');
   };
 
   const captureImage = () => {
@@ -114,9 +130,17 @@ const SnapSharing = ({ coupleId, partnerName }) => {
       if (video.videoWidth > 0 && video.videoHeight > 0) {
         canvas.width = video.videoWidth;
         canvas.height = video.videoHeight;
+
+        // Flip horizontally if using user camera for mirror effect
+        if (facingMode === 'user') {
+          context.translate(canvas.width, 0);
+          context.scale(-1, 1);
+        }
+
         context.drawImage(video, 0, 0, canvas.width, canvas.height);
         const imageDataUrl = canvas.toDataURL('image/jpeg');
-        setImagePreview(imageDataUrl);
+        setMediaPreview(imageDataUrl);
+        setMediaType('image');
         setUseCamera(false);
       } else {
         setError("Video not loaded yet. Please wait for the video to load before capturing.");
@@ -126,13 +150,48 @@ const SnapSharing = ({ coupleId, partnerName }) => {
     }
   };
 
+  const startRecording = () => {
+    if (stream) {
+      const recorder = new MediaRecorder(stream);
+      setMediaRecorder(recorder);
+      setRecordedChunks([]);
+
+      recorder.ondataavailable = (e) => {
+        if (e.data.size > 0) {
+          setRecordedChunks(prev => [...prev, e.data]);
+        }
+      };
+
+      recorder.start();
+      setIsRecording(true);
+    }
+  };
+
+  const stopRecording = () => {
+    if (mediaRecorder && isRecording) {
+      mediaRecorder.onstop = () => {
+        const blob = new Blob(recordedChunks, { type: 'video/mp4' });
+        const reader = new FileReader();
+        reader.onloadend = () => {
+          setMediaPreview(reader.result);
+          setMediaType('video');
+          setUseCamera(false);
+        };
+        reader.readAsDataURL(blob);
+      };
+      mediaRecorder.stop();
+      setIsRecording(false);
+    }
+  };
+
   const stopCamera = () => {
     setUseCamera(false);
+    setIsRecording(false);
   };
 
   const handleUpload = async () => {
-    if (!imagePreview) {
-      setError('Please select an image first');
+    if (!mediaPreview) {
+      setError('Please select media first');
       return;
     }
 
@@ -141,7 +200,6 @@ const SnapSharing = ({ coupleId, partnerName }) => {
     setError('');
 
     try {
-      // Update progress during upload
       setUploadProgress(30);
 
       const data = await apiRequest('/snaps/upload', {
@@ -149,16 +207,18 @@ const SnapSharing = ({ coupleId, partnerName }) => {
         body: JSON.stringify({
           coupleId,
           uploadedBy: partnerName,
-          imageUrl: imagePreview, // This is a data URL that the backend will process
-          caption: 'Shared photo'
+          imageUrl: mediaPreview,
+          caption: 'Shared snap',
+          mediaType,
+          source
         })
       });
 
       setUploadProgress(100);
 
       setSnaps(prev => [data.data, ...prev]);
-      setLastUploadedSnap(data.data); // Set the last uploaded snap
-      setImagePreview(null);
+      setLastUploadedSnap(data.data);
+      setMediaPreview(null);
       if (fileInputRef.current) {
         fileInputRef.current.value = '';
       }
@@ -183,7 +243,6 @@ const SnapSharing = ({ coupleId, partnerName }) => {
       });
 
       setSnaps(prev => prev.filter(snap => snap._id !== snapId));
-      alert('Snap deleted successfully');
     } catch (error) {
       console.error('Error deleting snap:', error);
       alert(error.message);
@@ -204,8 +263,8 @@ const SnapSharing = ({ coupleId, partnerName }) => {
                 <input
                   type="file"
                   ref={fileInputRef}
-                  accept="image/*"
-                  onChange={handleImageChange}
+                  accept="image/*,video/*"
+                  onChange={handleFileChange}
                   className="file-input"
                 />
                 <span>🖼️ Gallery</span>
@@ -219,36 +278,77 @@ const SnapSharing = ({ coupleId, partnerName }) => {
           <div className="camera-modal">
             <button onClick={stopCamera} className="close-camera-btn">✕</button>
             <div className="camera-container">
-              <video ref={videoRef} className="camera-video" playsInline />
+              <video
+                ref={videoRef}
+                className="camera-video"
+                playsInline
+                muted // Mute preview to avoid feedback
+                style={{ transform: facingMode === 'user' ? 'scaleX(-1)' : 'none' }}
+              />
               {!videoLoaded && (
                 <div className="video-loading-overlay">
                   <p>Loading camera...</p>
                 </div>
               )}
               <canvas ref={canvasRef} style={{ display: 'none' }} />
+
               <div className="camera-controls">
                 <button
-                  onClick={captureImage}
-                  className="capture-btn"
-                  aria-label="Capture photo"
-                />
+                  onClick={flipCamera}
+                  className="control-btn flip-btn"
+                  title="Flip Camera"
+                >
+                  🔄
+                </button>
+
+                {isRecording ? (
+                  <button
+                    onClick={stopRecording}
+                    className="capture-btn recording"
+                    title="Stop Recording"
+                  />
+                ) : (
+                  <div className="capture-actions">
+                    <button
+                      onClick={captureImage}
+                      className="capture-btn"
+                      title="Take Photo"
+                    />
+                    <button
+                      onClick={startRecording}
+                      className="capture-btn video-btn"
+                      title="Record Video"
+                    />
+                  </div>
+                )}
               </div>
             </div>
           </div>
         )}
 
-        {/* Show image preview when available and not using camera */}
-        {!useCamera && imagePreview && !lastUploadedSnap && (
+        {/* Preview */}
+        {!useCamera && mediaPreview && !lastUploadedSnap && (
           <div className="image-preview">
-            <img src={imagePreview} alt="Preview" />
+            {mediaType === 'video' ? (
+              <video src={mediaPreview} controls className="preview-media" />
+            ) : (
+              <img src={mediaPreview} alt="Preview" className="preview-media" />
+            )}
+            <div className="preview-badge">
+              {source === 'camera' ? '📸 Camera' : '🖼️ Gallery'} • {mediaType === 'video' ? '🎥 Video' : '📷 Image'}
+            </div>
           </div>
         )}
 
-        {/* Show the last uploaded snap */}
+        {/* Last Uploaded */}
         {lastUploadedSnap && (
           <div className="image-preview">
             <p>Last uploaded snap:</p>
-            <img src={lastUploadedSnap.imageUrl} alt="Last uploaded snap" />
+            {lastUploadedSnap.mediaType === 'video' ? (
+              <video src={lastUploadedSnap.imageUrl} controls className="preview-media" />
+            ) : (
+              <img src={lastUploadedSnap.imageUrl} alt="Last uploaded" className="preview-media" />
+            )}
           </div>
         )}
 
@@ -266,7 +366,7 @@ const SnapSharing = ({ coupleId, partnerName }) => {
           !useCamera && (
             <button
               onClick={handleUpload}
-              disabled={!imagePreview}
+              disabled={!mediaPreview}
               className="upload-btn"
             >
               Share Snap
@@ -283,7 +383,12 @@ const SnapSharing = ({ coupleId, partnerName }) => {
         ) : (
           snaps.map(snap => (
             <div key={snap._id} className="snap-item">
-              <img src={snap.imageUrl} alt="Shared" />
+              {snap.mediaType === 'video' ? (
+                <video src={snap.imageUrl} controls className="snap-media" />
+              ) : (
+                <img src={snap.imageUrl} alt="Shared" className="snap-media" />
+              )}
+
               <div className="snap-info">
                 <div className="snap-header">
                   <span className="uploaded-by">{snap.uploadedBy}</span>
@@ -291,8 +396,14 @@ const SnapSharing = ({ coupleId, partnerName }) => {
                     {new Date(snap.uploadDate).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                   </span>
                 </div>
+                <div className="snap-meta">
+                  <span className="source-badge">
+                    {snap.source === 'camera' ? '📸' : '🖼️'} {snap.mediaType === 'video' ? '🎥' : '📷'}
+                  </span>
+                </div>
                 {snap.caption && <p className="snap-caption">{snap.caption}</p>}
               </div>
+
               {snap.uploadedBy === partnerName && (
                 <button
                   onClick={() => handleDeleteSnap(snap._id)}
