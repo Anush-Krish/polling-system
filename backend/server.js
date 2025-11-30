@@ -3,13 +3,35 @@ const cors = require('cors');
 const mongoose = require('mongoose');
 const http = require('http');
 const socketIo = require('socket.io');
+const helmet = require('helmet');
+const rateLimit = require('express-rate-limit');
+const mongoSanitize = require('express-mongo-sanitize');
+const xss = require('xss-clean');
 require('dotenv').config();
 
 const app = express();
 const server = http.createServer(app);
+
+// Security Middleware
+app.use(helmet()); // Set security HTTP headers
+
+// Limit requests from same API
+const limiter = rateLimit({
+  max: 100,
+  windowMs: 60 * 60 * 1000,
+  message: 'Too many requests from this IP, please try again in an hour!'
+});
+app.use('/api', limiter);
+
+// Data sanitization against NoSQL query injection
+app.use(mongoSanitize());
+
+// Data sanitization against XSS
+app.use(xss());
+
 const io = socketIo(server, {
   cors: {
-    origin: "https://polling-system-frontend-eyed.onrender.com",
+    origin: process.env.FRONTEND_URL || "https://polling-system-frontend-eyed.onrender.com",
     methods: ["GET", "POST"],
     credentials: true
   }
@@ -19,21 +41,21 @@ const PORT = process.env.PORT || 5001;
 
 // Middleware
 app.use(cors({
-  origin: "https://polling-system-frontend-eyed.onrender.com",
+  origin: process.env.FRONTEND_URL || "https://polling-system-frontend-eyed.onrender.com",
   credentials: true,
   optionsSuccessStatus: 200,
   exposedHeaders: ['Authorization'],
   allowedHeaders: ['Content-Type', 'Authorization']
 }));
-app.use(express.json());
+app.use(express.json({ limit: '500mb' })); // Body limit increased to 500mb
 
 // Database connection
-mongoose.connect(process.env.MONGODB_URI , {
+mongoose.connect(process.env.MONGODB_URI, {
   useNewUrlParser: true,
   useUnifiedTopology: true,
 })
-.then(() => console.log('MongoDB connection successful'))
-.catch(err => console.error('MongoDB connection error:', err));
+  .then(() => console.log('MongoDB connection successful'))
+  .catch(err => console.error('MongoDB connection error:', err));
 
 // Import routes
 const coupleRoutes = require('./routes/coupleRoutes');

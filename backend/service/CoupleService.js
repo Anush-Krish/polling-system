@@ -12,22 +12,22 @@ class CoupleService {
     try {
       // Validate input data using DTO
       const validatedData = CoupleDTO.create(coupleData);
-      
+
       // Check if couple with same access code already exists
       const existingCouple = await Couple.findOne({ accessCode: coupleData.accessCode });
       if (existingCouple) {
         throw new Error('Couple with this access code already exists');
       }
-      
+
       // Hash the access code
       const hashedPassword = await bcrypt.hash(coupleData.accessCode, 10);
-      
+
       const couple = new Couple({
         ...validatedData.toObject(),
         accessCode: hashedPassword // Store hashed access code
       });
       await couple.save();
-      
+
       return couple;
     } catch (error) {
       throw new Error(`Failed to create couple: ${error.message}`);
@@ -38,26 +38,21 @@ class CoupleService {
   async authenticateCouple(coupleName, accessCode, partnerName) {
     try {
       console.log('Attempting to authenticate couple...');
-      console.log('Provided coupleName:', coupleName);
-      console.log('Provided accessCode:', accessCode);
-      console.log('Provided partnerName:', partnerName);
 
       const couple = await Couple.findOne({ coupleName, isActive: true });
-      
+
       if (!couple) {
         console.log('Couple not found or inactive.');
         throw new Error('Invalid couple name or couple not found');
       }
       console.log('Couple found:', couple.coupleName, couple._id);
-      console.log('Stored hashed accessCode:', couple.accessCode);
 
       // Compare provided access code with hashed access code
       const isMatch = await bcrypt.compare(accessCode, couple.accessCode);
-      console.log('bcrypt.compare result (isMatch):', isMatch);
       if (!isMatch) {
         throw new Error('Invalid access code');
       }
-      
+
       // Check if the partner name matches one of the partners
       if (couple.partner1 !== partnerName && couple.partner2 !== partnerName) {
         console.log('Partner name mismatch. Stored partners:', couple.partner1, couple.partner2);
@@ -68,7 +63,7 @@ class CoupleService {
       // Invalidate any existing active sessions for this partner in this couple
       await SessionService.invalidateOldSessions(couple._id, partnerName);
       console.log('Old sessions invalidated.');
-      
+
       // Generate JWT
       const token = jwt.sign(
         { coupleId: couple._id, partnerName: partnerName },
@@ -86,7 +81,7 @@ class CoupleService {
       });
       await session.save();
       console.log('Session saved.');
-      
+
       return { couple, token };
     } catch (error) {
       console.error('Authentication failed in service:', error.message);
@@ -99,21 +94,21 @@ class CoupleService {
     try {
       // Update status and set expiry to end of current day
       const statusExpiry = new Date(new Date().setHours(23, 59, 59, 999));
-      
+
       const updatedCouple = await Couple.findByIdAndUpdate(
         coupleId,
-        { 
-          status, 
+        {
+          status,
           statusExpiry,
           ...(location && { location })
         },
         { new: true }
       );
-      
+
       if (!updatedCouple) {
         throw new Error('Couple not found');
       }
-      
+
       return updatedCouple;
     } catch (error) {
       throw new Error(`Failed to update status: ${error.message}`);
@@ -150,17 +145,17 @@ class CoupleService {
   async resetStatusForNewDay(coupleId) {
     try {
       const statusExpiry = new Date(new Date().setHours(23, 59, 59, 999));
-      
+
       const updatedCouple = await Couple.findByIdAndUpdate(
         coupleId,
         { status: 'Not updated today', statusExpiry },
         { new: true }
       );
-      
+
       if (!updatedCouple) {
         throw new Error('Couple not found');
       }
-      
+
       return updatedCouple;
     } catch (error) {
       throw new Error(`Failed to reset status: ${error.message}`);

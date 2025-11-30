@@ -1,4 +1,4 @@
-// CoupleAuth.css
+/* CoupleAuth.css */
 .auth-container {
   display: flex;
   justify-content: center;
@@ -57,10 +57,43 @@
   font-size: 1rem;
   cursor: pointer;
   margin-top: 1rem;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 48px;
+  /* Fixed height to prevent layout shift */
 }
 
-.auth-btn:hover {
+.auth-btn:hover:not(:disabled) {
   background-color: #4F0DCE;
+}
+
+.auth-btn:disabled {
+  background-color: #a0a0a0;
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
+/* Loader Styles */
+.loader {
+  width: 20px;
+  height: 20px;
+  border: 3px solid #ffffff;
+  border-bottom-color: transparent;
+  border-radius: 50%;
+  display: inline-block;
+  box-sizing: border-box;
+  animation: rotation 1s linear infinite;
+}
+
+@keyframes rotation {
+  0% {
+    transform: rotate(0deg);
+  }
+
+  100% {
+    transform: rotate(360deg);
+  }
 }
 
 .error-message {
@@ -88,6 +121,7 @@
 .toggle-auth button:hover {
   color: #4F0DCE;
 }
+
 /* Mobile optimizations for 5-6.5 inch screens */
 @media (max-width: 414px) {
   .auth-container {
@@ -98,22 +132,22 @@
     padding: 1.5rem;
     width: 100%;
   }
-  
+
   .auth-card h2 {
     font-size: 1.2rem;
     margin-bottom: 1.2rem;
   }
-  
+
   .form-group input {
     padding: 0.6rem;
     font-size: 0.95rem;
   }
-  
+
   .auth-btn {
     padding: 0.65rem;
     font-size: 0.95rem;
   }
-  
+
   .toggle-auth {
     margin-top: 0.8rem;
   }
@@ -123,25 +157,25 @@
   .auth-card {
     padding: 1.2rem;
   }
-  
+
   .auth-card h2 {
     font-size: 1.1rem;
     margin-bottom: 1rem;
   }
-  
+
   .form-group {
     margin-bottom: 0.8rem;
   }
-  
+
   .form-group label {
     font-size: 0.9rem;
   }
-  
+
   .form-group input {
     padding: 0.5rem;
     font-size: 0.9rem;
   }
-  
+
   .auth-btn {
     padding: 0.6rem;
     font-size: 0.9rem;
@@ -152,29 +186,29 @@
   .auth-container {
     padding: 0.5rem;
   }
-  
+
   .auth-card {
     padding: 1rem;
   }
-  
+
   .auth-card h2 {
     font-size: 1rem;
     margin-bottom: 0.8rem;
   }
-  
+
   .form-group {
     margin-bottom: 0.7rem;
   }
-  
+
   .form-group label {
     font-size: 0.85rem;
   }
-  
+
   .form-group input {
     padding: 0.45rem;
     font-size: 0.85rem;
   }
-  
+
   .auth-btn {
     padding: 0.55rem;
     font-size: 0.85rem;

@@ -12,6 +12,7 @@ const CoupleAuth = ({ onAuthSuccess }) => {
     partnerName: ''
   });
   const [error, setError] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleChange = (e) => {
     setFormData({
@@ -23,7 +24,9 @@ const CoupleAuth = ({ onAuthSuccess }) => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
+    setIsLoading(true);
+    setError('');
+
     try {
       const data = await apiRequest('/couples/authenticate', {
         method: 'POST',
@@ -33,15 +36,17 @@ const CoupleAuth = ({ onAuthSuccess }) => {
           partnerName: formData.partnerName
         })
       });
-      
+
       // Store token and couple data in localStorage
       localStorage.setItem('coupleToken', data.data.token);
       localStorage.setItem('coupleId', data.data._id);
       localStorage.setItem('partnerName', formData.partnerName);
-      
+
       onAuthSuccess(data.data);
     } catch (err) {
       setError(err.message);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -49,9 +54,9 @@ const CoupleAuth = ({ onAuthSuccess }) => {
     <div className="auth-container">
       <div className="auth-card">
         <h2>Join Couple Account</h2>
-        
+
         {error && <div className="error-message">{error}</div>}
-        
+
         <form onSubmit={handleSubmit}>
           <div className="form-group">
             <label htmlFor="coupleName">Couple Name</label>
@@ -62,9 +67,10 @@ const CoupleAuth = ({ onAuthSuccess }) => {
               value={formData.coupleName}
               onChange={handleChange}
               required
+              disabled={isLoading}
             />
           </div>
-          
+
           <div className="form-group">
             <label htmlFor="accessCode">Access Code</label>
             <input
@@ -74,9 +80,10 @@ const CoupleAuth = ({ onAuthSuccess }) => {
               value={formData.accessCode}
               onChange={handleChange}
               required
+              disabled={isLoading}
             />
           </div>
-          
+
           <div className="form-group">
             <label htmlFor="partnerName">Your Name</label>
             <input
@@ -86,11 +93,12 @@ const CoupleAuth = ({ onAuthSuccess }) => {
               value={formData.partnerName}
               onChange={handleChange}
               required
+              disabled={isLoading}
             />
           </div>
-          
-          <button type="submit" className="auth-btn">
-            Join Account
+
+          <button type="submit" className="auth-btn" disabled={isLoading}>
+            {isLoading ? <span className="loader"></span> : 'Join Account'}
           </button>
         </form>
       </div>
