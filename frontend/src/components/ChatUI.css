@@ -172,8 +172,9 @@
   }
 
   .message-form {
-    padding: 10px;
-    padding-bottom: max(10px, env(safe-area-inset-bottom));
+    padding: 8px;
+    padding-bottom: max(8px, env(safe-area-inset-bottom));
+    /* Ensure safe area but minimize extra space */
   }
 
   .message-input {

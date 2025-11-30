@@ -335,7 +335,7 @@ const SnapSharing = ({ coupleId, partnerName }) => {
               <img src={mediaPreview} alt="Preview" className="preview-media" />
             )}
             <div className="preview-badge">
-              {source === 'camera' ? '📸 Camera' : '🖼️ Gallery'} • {mediaType === 'video' ? '🎥 Video' : '📷 Image'}
+              {source === 'camera' ? '📸' : '🖼️'} {mediaType === 'video' && '🎥'}
             </div>
           </div>
         )}
@@ -398,7 +398,7 @@ const SnapSharing = ({ coupleId, partnerName }) => {
                 </div>
                 <div className="snap-meta">
                   <span className="source-badge">
-                    {snap.source === 'camera' ? '📸' : '🖼️'} {snap.mediaType === 'video' ? '🎥' : '📷'}
+                    {snap.source === 'camera' ? '📸' : '🖼️'} {snap.mediaType === 'video' && '🎥'}
                   </span>
                 </div>
                 {snap.caption && <p className="snap-caption">{snap.caption}</p>}

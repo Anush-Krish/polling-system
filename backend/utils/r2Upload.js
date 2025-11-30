@@ -8,24 +8,26 @@ async function uploadImageToR2(imageBuffer, originalName, folder = 'snaps') {
   try {
     console.log('Starting upload to R2...');
     console.log('Image buffer size:', imageBuffer.length);
-    
+
     // Generate a unique filename using UUID
     const fileExtension = originalName.split('.').pop();
     const uniqueFileName = `${folder}/${randomUUID()}.${fileExtension}`;
-    
+
     console.log('Attempting to upload to R2 with key:', uniqueFileName);
-    
+
+    const contentType = fileExtension === 'mp4' ? 'video/mp4' : `image/${fileExtension}`;
+
     const command = new PutObjectCommand({
       Bucket: 'anush-dev', // The bucket name from the requirement
       Key: uniqueFileName,
       Body: imageBuffer,
-      ContentType: `image/${fileExtension}`
+      ContentType: contentType
     });
-    
+
     await r2Client.send(command);
-    
+
     console.log('Upload to R2 successful');
-    
+
 
     return {
       success: true,
